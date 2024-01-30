@@ -5,9 +5,6 @@ import { AuthContext } from "../context/AuthContext";
 
 const Register: React.FC = () => {
 
-    const authContext = useContext(AuthContext);
-    const user = authContext ? authContext.user : null
-    
     return <>
     <Form>
         <Row 
@@ -19,7 +16,6 @@ const Register: React.FC = () => {
             <Col xs ={6}>
             <Stack gap={3}>
                 <h2>Register</h2>
-                <h2>{user?.name}</h2>
                 <Form.Control type="text" placeholder="Name"/>
                 <Form.Control type="email" placeholder="Email"/>
                 <Form.Control type="password" placeholder="Password"/>

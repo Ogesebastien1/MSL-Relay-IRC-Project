@@ -15,12 +15,15 @@ interface AuthContextProviderProps {
 }
 
 export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<User>({
-        name: "Charles",
+    const [user, setUser] = useState<User | null>(null); // Initialize user as null waiting backend
+    const [registerInfo, setRegisterInfo] = useState({
+        name: "",
+        email: "",
+        password: "",
     });
-
+    
     return (
-        <AuthContext.Provider value={{ user }}>
+        <AuthContext.Provider value={{ user, register }}>
             {children}
         </AuthContext.Provider>
     );
