@@ -1,18 +1,22 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, ReactNode } from "react";
+
 type User = {
     name: string;
- 
 }
 
-export const AuthContext = createContext<{ user: User } | null>(null);
+type AuthContextType = {
+    user: User;
+};
+
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthContextProviderProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User>({
-        name: "Charles"
+        name: "Charles",
     });
 
     return (
