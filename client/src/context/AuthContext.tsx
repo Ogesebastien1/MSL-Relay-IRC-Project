@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode } from "react";
+import React, { createContext, useState, ReactNode, useCallback } from "react";
 
 type User = {
     name: string;
@@ -15,15 +15,32 @@ interface AuthContextProviderProps {
 }
 
 export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null); // Initialize user as null waiting backend
+    const [user, setUser] = useState<User | null>(null); 
+    //! Initialize user as null waiting backend and need to add user in AuthContex.Provider! look Vidéo Vidéo 4 Exemple syntaxe : 
+    // const [user, setUser] = useState<User>({
+    //     name: "Charles",
+    // });
+
     const [registerInfo, setRegisterInfo] = useState({
         name: "",
         email: "",
         password: "",
     });
-    
+
+    console.log("registerInfo", registerInfo)
+
+    const updateRegisterInfo = useCallback((info : any) => {
+        setRegisterInfo(info);
+    }, [])
+
+
     return (
-        <AuthContext.Provider value={{ user, register }}>
+        <AuthContext.Provider value={{
+            user, 
+            registerInfo, 
+            updateRegisterInfo
+        }}>
+
             {children}
         </AuthContext.Provider>
     );
