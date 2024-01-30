@@ -8,6 +8,12 @@ require("dotenv").config()
 app.use(express.json());
 app.use(cors());
 
+// CRUD actions
+
+// Read datas
+app.get("/", (_req: any, _res: any) => {
+    _res.send("Welcome to MSL Relay chat application!");
+});
 
 const port = process.env.PORT || 5000;
 const uri = process.env.ATLAS_URI || 'undifined';
