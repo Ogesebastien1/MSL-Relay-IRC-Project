@@ -66,9 +66,36 @@ const loginUser = async (req:any, res:any) => {
 
         res.status(200).json({_id: user._id, name: user.name, email, token});
     } catch (error) {
-        
+        console.log(error);
+        // if there is a problem => Error 500 (Server side error)
+        res.status(500).json(error);
     }
-
 }
 
-module.exports = { registerUser, loginUser };
+const findUser = async(req:any, res: any) => {
+    const userId = req.params.userId;
+
+    try {
+       const user = await userModel.findById(userId);
+       
+       res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+        // if there is a problem => Error 500 (Server side error)
+        res.status(500).json(error);
+    }
+}
+
+const getUsers = async(req:any, res: any) => {
+    try {
+       const users = await userModel.find();
+       
+       res.status(200).json(users);
+    } catch (error) {
+        console.log(error);
+        // if there is a problem => Error 500 (Server side error)
+        res.status(500).json(error);
+    }
+}
+
+module.exports = { registerUser, loginUser, findUser, getUsers };
