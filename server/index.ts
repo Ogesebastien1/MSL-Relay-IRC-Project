@@ -1,12 +1,14 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import userRoute from "./Routes/userRoute";
 
 const app = express();
 require("dotenv").config()
 
 app.use(express.json());
 app.use(cors());
+app.use("/api/users", userRoute);
 
 // CRUD actions
 
