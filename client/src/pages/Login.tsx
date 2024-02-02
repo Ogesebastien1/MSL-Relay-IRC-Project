@@ -1,4 +1,8 @@
-import {Alert,Button, Form, Row, Col, Stack} from "react-bootstrap";
+import {Row, Col} from "react-bootstrap";
+import Alert from 'react-bootstrap/Alert';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Stack from 'react-bootstrap/Stack';
 
 const Login = () => {
     return <>
