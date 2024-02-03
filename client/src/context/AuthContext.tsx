@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { baseUrl, postRequest } from "../utils/services";
 
 type User = {
@@ -9,6 +9,12 @@ type RegisterInfoType = {
     name: string;
     email: string;
     password: string;
+};
+
+type loginInfoType = {
+    email: string;
+    password: string;
+    name: string;
 };
 
 type ErrorResponse = {
@@ -24,10 +30,22 @@ type AuthContextType = {
         email: string; 
         password: string; 
     };
+    
     updateRegisterInfo: (info: RegisterInfoType) => void;
     registerUser: (e: any) => Promise<void>;
     registerError: ErrorResponse | null;
     isRegisterLoading: boolean;
+    logoutUser: () => void;
+    loginInfo: {
+        email: string;
+        password: string;
+        name: string;
+    };
+    loginUser: (e: React.FormEvent<HTMLFormElement>) => Promise<void>; 
+    loginError: ErrorResponse | null;
+    updateLoginInfo: (info: loginInfoType) => void; 
+    isLoginLoading: boolean; 
+    
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -36,7 +54,13 @@ const defaultAuthContext: AuthContextType = {
     updateRegisterInfo: () => {},
     registerUser: async () => {},
     registerError: null,
-    isRegisterLoading: false
+    isRegisterLoading: false,
+    logoutUser: () => {},
+    loginInfo: {email: "", password: "", name: "" },
+    loginUser: async () => {},
+    loginError: null,
+    updateLoginInfo: () => {},
+    isLoginLoading: false,
 };
 
 interface AuthContextProviderProps {
@@ -55,10 +79,31 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         password: "",
     });
 
-    console.log("registerInfo", registerInfo)
+    const [loginError, setLoginError] = useState<ErrorResponse | null>(null);
+    const [isLoginLoading, setIsLoginLoading] = useState(false);
+    const [loginInfo, setLoginInfo] = useState<loginInfoType>({
+        email: "",
+        password: "",
+        name: ""
+    });
+
+    console.log("loginInfo", loginInfo)
+
+    useEffect(()=>{
+        const userString  = localStorage.getItem("user");
+
+        if (userString ) {
+            const userObject = JSON.parse(userString);
+            setUser(userObject);
+        }
+    }, []);
 
     const updateRegisterInfo = useCallback((info: RegisterInfoType) => {
         setRegisterInfo(info);
+    }, []);
+
+    const updateLoginInfo = useCallback((info: loginInfoType) => {
+        setLoginInfo(info);
     }, []);
 
     // using callback to optimize the function(do not re-render the function unless updating)
@@ -80,7 +125,35 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         localStorage.setItem("user", JSON.stringify(response));
         setUser(response);
 
-    }, [registerInfo])
+    }, [registerInfo]
+    );
+
+    const loginUser = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+
+        e.preventDefault()
+
+        setIsLoginLoading(true)
+        setLoginError(null)
+
+        const response = await postRequest(`${baseUrl}/users/login`, JSON.stringify(loginInfo));
+        
+        setIsLoginLoading(false)
+
+        if(response.error){
+            return setLoginError(response)
+        }
+
+        localStorage.setItem("User", JSON.stringify(response))
+        setUser(response);
+
+    },[loginInfo])
+
+
+
+    const logoutUser = useCallback(()=>{
+        localStorage.removeItem("user");
+        setUser(null);
+    }, []);
 
     return (
         <AuthContext.Provider value={{
@@ -89,7 +162,13 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             updateRegisterInfo,
             registerUser,
             registerError,
-            isRegisterLoading
+            isRegisterLoading,
+            logoutUser,
+            loginUser,
+            loginError,
+            loginInfo,
+            updateLoginInfo,
+            isLoginLoading,
         }}>
             {children}
         </AuthContext.Provider>
