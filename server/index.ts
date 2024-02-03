@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import userRoute from "./Routes/userRoute";
+import chatRoute from "./Routes/chatRoute";
 
 const app = express();
 require("dotenv").config()
@@ -9,8 +10,7 @@ require("dotenv").config()
 app.use(express.json());
 app.use(cors());
 app.use("/api/users", userRoute);
-
-// CRUD actions
+app.use("/api/chats", chatRoute);
 
 // Read datas
 app.get("/", (_req: any, _res: any) => {
