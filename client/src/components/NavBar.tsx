@@ -1,25 +1,39 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Container, Nav, Navbar, Stack } from "react-bootstrap";
 import {Link} from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const MyNavbar: React.FC = () => {
-    return (
-      <Navbar bg="dark" className="mb-4" style={{ height: "3.75rem" }}>
-        <Container>
-          <h2>
-            <Link to="/" className="link-light text-decoration-none">MSL Relay</Link>
-          </h2>
-          <span className = "text-warning">Logged in as Charles</span>
-          <Nav>
-            <Stack direction="horizontal" gap={3}>
-                <Link to="/Login" className="link-light text-decoration-none">Login</Link>
-                <Link to="/Register" className="link-light text-decoration-none">Register</Link>
-                <Link to="/Chat" className="link-light text-decoration-none">Chat</Link>
-            </Stack>
-          </Nav>
-        </Container>
-      </Navbar>
-    );
-  };
+
+  const {user, logoutUser} = useContext(AuthContext);
+
+  return (
+    <Navbar bg="dark" className="mb-4" style={{ height: "3.75rem" }}>
+      <Container>
+        <h2>
+          <Link to="/" className="link-light text-decoration-none">MSL Relay</Link>
+        </h2>
+        {user && <span className = "text-warning">Logged in as {user?.name}</span>}
+        <Nav>
+          <Stack direction="horizontal" gap={3}>
+              {
+                user && (
+                <>
+                  <Link onClick={() => logoutUser()} to="/Login" className="link-light text-decoration-none">Logout</Link>
+                </>) 
+              }
+
+              { !user && 
+                <>
+                  <Link to="/Login" className="link-light text-decoration-none">Login</Link>
+                  <Link to="/Register" className="link-light text-decoration-none">Register</Link>
+                </>
+              }
+          </Stack>
+        </Nav>
+      </Container>
+    </Navbar>
+  );
+};
 
 export default MyNavbar;
