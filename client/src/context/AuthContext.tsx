@@ -11,6 +11,12 @@ type RegisterInfoType = {
     password: string;
 };
 
+type loginInfoType = {
+    email: string;
+    password: string;
+    name: string;
+};
+
 type ErrorResponse = {
     error: any;
     message: string;
@@ -24,11 +30,22 @@ type AuthContextType = {
         email: string; 
         password: string; 
     };
+    
     updateRegisterInfo: (info: RegisterInfoType) => void;
     registerUser: (e: any) => Promise<void>;
     registerError: ErrorResponse | null;
     isRegisterLoading: boolean;
     logoutUser: () => void;
+    loginInfo: {
+        email: string;
+        password: string;
+        name: string;
+    };
+    loginUser: (e: React.FormEvent<HTMLFormElement>) => Promise<void>; 
+    loginError: ErrorResponse | null;
+    updateLoginInfo: (info: loginInfoType) => void; 
+    isLoginLoading: boolean; 
+    
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -38,7 +55,12 @@ const defaultAuthContext: AuthContextType = {
     registerUser: async () => {},
     registerError: null,
     isRegisterLoading: false,
-    logoutUser: () => {}
+    logoutUser: () => {},
+    loginInfo: {email: "", password: "", name: "" },
+    loginUser: async () => {},
+    loginError: null,
+    updateLoginInfo: () => {},
+    isLoginLoading: false,
 };
 
 interface AuthContextProviderProps {
@@ -57,7 +79,15 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         password: "",
     });
 
-    console.log("User", user);
+    const [loginError, setLoginError] = useState<ErrorResponse | null>(null);
+    const [isLoginLoading, setIsLoginLoading] = useState(false);
+    const [loginInfo, setLoginInfo] = useState<loginInfoType>({
+        email: "",
+        password: "",
+        name: ""
+    });
+
+    console.log("loginInfo", loginInfo)
 
     useEffect(()=>{
         const userString  = localStorage.getItem("user");
@@ -68,9 +98,12 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         }
     }, []);
 
-    console.log("registerError", registerError);
     const updateRegisterInfo = useCallback((info: RegisterInfoType) => {
         setRegisterInfo(info);
+    }, []);
+
+    const updateLoginInfo = useCallback((info: loginInfoType) => {
+        setLoginInfo(info);
     }, []);
 
     // using callback to optimize the function(do not re-render the function unless updating)
@@ -92,7 +125,30 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         localStorage.setItem("user", JSON.stringify(response));
         setUser(response);
 
-    }, [registerInfo])
+    }, [registerInfo]
+    );
+
+    const loginUser = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+
+        e.preventDefault()
+
+        setIsLoginLoading(true)
+        setLoginError(null)
+
+        const response = await postRequest(`${baseUrl}/users/login`, JSON.stringify(loginInfo));
+        
+        setIsLoginLoading(false)
+
+        if(response.error){
+            return setLoginError(response)
+        }
+
+        localStorage.setItem("User", JSON.stringify(response))
+        setUser(response);
+
+    },[loginInfo])
+
+
 
     const logoutUser = useCallback(()=>{
         localStorage.removeItem("user");
@@ -107,7 +163,12 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             registerUser,
             registerError,
             isRegisterLoading,
-            logoutUser
+            logoutUser,
+            loginUser,
+            loginError,
+            loginInfo,
+            updateLoginInfo,
+            isLoginLoading,
         }}>
             {children}
         </AuthContext.Provider>
