@@ -11,6 +11,7 @@ export const ChatContext = createContext<ChatContextType | null>(null);
 
 interface User {
     _id: string;
+    name: string;
 }
 
 interface ChatContextProviderProps {
