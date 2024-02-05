@@ -2,6 +2,7 @@ import React, { createContext, useState, ReactNode, useCallback, useEffect } fro
 import { baseUrl, postRequest } from "../utils/services";
 
 type User = {
+    _id: string,
     name: string;
 }
 
@@ -49,7 +50,7 @@ type AuthContextType = {
 };
 
 const defaultAuthContext: AuthContextType = {
-    user: {name: ""},
+    user: {_id: "",name: ""},
     registerInfo: { name: "", email: "", password: "" },
     updateRegisterInfo: () => {},
     registerUser: async () => {},
@@ -86,8 +87,6 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         password: "",
         name: ""
     });
-
-    console.log("loginInfo", loginInfo)
 
     useEffect(()=>{
         const userString  = localStorage.getItem("user");

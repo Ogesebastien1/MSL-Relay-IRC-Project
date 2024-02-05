@@ -7,26 +7,26 @@ import {Container} from "react-bootstrap";
 import MyNavbar from "./components/NavBar";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
-
+import { ChatContextProvider } from "./context/ChatContext";
 
 function App() {
 
   const {user} = useContext(AuthContext);
 
   return (
-    <>
-    <MyNavbar/>
-    <Container>
-      <Routes>
-        <Route path="/" element = {user ? <Chat/> : <Login/>} />
-        <Route path="/Login" element = {user ? <Chat/> : <Login/>} />
-        <Route path="/Register" element = {user ? <Chat/> : <Register/>} />
-        <Route path="*" element = {<Navigate to="/"/>} />
-      </Routes>
-    </Container>
-    </>
-    );
+    <ChatContextProvider user={user}>
+      <MyNavbar/>
+      <Container>
+        <Routes>
+          <Route path="/" element = {user ? <Chat/> : <Login/>} />
+          <Route path="/Login" element = {user ? <Chat/> : <Login/>} />
+          <Route path="/Register" element = {user ? <Chat/> : <Register/>} />
+          <Route path="*" element = {<Navigate to="/"/>} />
+        </Routes>
+      </Container>
+    </ChatContextProvider> // Change made here
+  );
   
 }
 
-export default App
+export default App;
