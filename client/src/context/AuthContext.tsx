@@ -87,8 +87,6 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         name: ""
     });
 
-    console.log("loginInfo", loginInfo)
-
     useEffect(()=>{
         const userString  = localStorage.getItem("user");
 

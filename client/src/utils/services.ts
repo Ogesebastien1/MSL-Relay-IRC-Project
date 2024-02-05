@@ -26,3 +26,22 @@ export const postRequest = async (url: string, body: any)=>{
 
     return data;
 }
+
+export const getRequest = async (url: string) => {
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    if (!response.ok){
+        let message = "An error occured!";
+        // if there is a message key in the data object then ...
+        if (data?.message){
+            //data.message for error is implemented in the backend side
+            message = data.message;
+        }
+
+        return {error: true, message};
+    }
+
+    return data;
+}
