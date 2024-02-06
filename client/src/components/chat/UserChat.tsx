@@ -1,6 +1,6 @@
 interface UserChatProps {
-    chat: any; // replace Chat with the actual type you've defined for a chat
-    user: any; // replace User with the actual type you've defined for a user
+    chat: string; 
+    user: any; 
 }
 
 const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
