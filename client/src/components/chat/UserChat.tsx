@@ -1,11 +1,9 @@
 interface UserChatProps {
-    chat: string; 
+    chat: any; 
     user: any; 
 }
 
-
-const UserChat: React.FC<UserChatProps> = ({  }) => {
-
+const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
     return (<>UserChat</>);
 }
 

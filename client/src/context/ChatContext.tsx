@@ -2,6 +2,7 @@ import { createContext, useState, ReactNode, useEffect } from "react";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
 
 interface Chat {
+    name: string;
     chat: string;
 }
 
@@ -53,9 +54,10 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
                     return !isChatCreated;
                 }
             });
+            setPotentialChats(pChats)
         };
         getUsers();
-    }, []);
+    }, [user]);
 
     useEffect(()=>{
         const getUserChats = async()=>{
