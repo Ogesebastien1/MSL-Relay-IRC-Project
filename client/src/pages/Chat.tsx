@@ -1,23 +1,19 @@
 import { Key, useContext } from "react";
 import { ChatContext } from "../context/ChatContext";
 import { Container, Stack } from 'react-bootstrap';
-import UserChat from "../components/chat/UserChat";
-import PotentialChats from "../components/chat/PotentialChats";
+import UserChat  from "../components/chat/UserChat";
 import { AuthContext } from "../context/AuthContext";
 
 const Chat = () => {
+
 
     const context = useContext(ChatContext);
     const { userChats, isUserChatsLoading, userChatsError} = context!;
     useContext(ChatContext);
     const { user } = useContext(AuthContext)
 
-
-    console.log("UserChat",userChats);
-
-    return (
+    return ( 
         <Container>
-            <PotentialChats />
             {userChats?.length < 0 ? null :(
                 <Stack direction="horizontal" gap={4} className="align-items-start">
                     <Stack className="messages-box flex-grow-0 pe-3" gap={3}>
@@ -25,7 +21,7 @@ const Chat = () => {
                         {userChats?.map((chat: any, index: Key | null | undefined) => {
                             return (
                                 <div key={index}>
-                                     <UserChat chat={chat} user={user} /> 
+                                    <UserChat chat={chat} user={user} />
                                 </div>
                             );
                         })}
