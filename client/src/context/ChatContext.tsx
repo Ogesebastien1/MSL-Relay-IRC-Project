@@ -43,18 +43,21 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             const pChats = response.filter((u: any) => {
 
                 let isChatCreated = false;
-
+                
                 if(user && user._id === u._id) return false;
-
+                console.log("userChats=>", userChats)
                 if(userChats){
-                    isChatCreated = userChats?.some((chat: { members: User[]; })=>{
+                    isChatCreated = userChats?.some((chat: { members: any[]; })=>{
+                        console.log("user_id", typeof(chat.members[0]))
                         return chat.members[0] === u._id || chat.members[1] === u._id;
                     });
                     
                     return !isChatCreated;
                 }
             });
-            setPotentialChats(pChats)
+            console.log("_userChats", userChats);
+            setPotentialChats(pChats);
+            console.log("pChats", pChats);
         };
         getUsers();
     }, [user]);
@@ -73,7 +76,6 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
                 if (response.error){
                     return setUserChatsError(response);
                 }
-
                 setUserChats(response);
             }
         }
