@@ -3,8 +3,10 @@ interface UserChatProps {
     user: any; 
 }
 
-const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
-    return (<>UserChat {chat}, {user}</>);
+
+const UserChat: React.FC<UserChatProps> = ({  }) => {
+
+    return (<>UserChat</>);
 }
 
 export default UserChat;

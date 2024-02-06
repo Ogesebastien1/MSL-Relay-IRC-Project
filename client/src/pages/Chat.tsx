@@ -1,16 +1,19 @@
 import { Key, useContext } from "react";
 import { ChatContext } from "../context/ChatContext";
 import { Container, Stack } from 'react-bootstrap';
-import UserChat from "../components/chat/UserChat";
+import UserChat  from "../components/chat/UserChat";
+import { AuthContext } from "../context/AuthContext";
 
 const Chat = () => {
 
 
-
     const context = useContext(ChatContext);
-
-    const { userChats, isUserChatsLoading, userChatsError, user } = context!;
+    const { userChats, isUserChatsLoading, userChatsError} = context!;
     useContext(ChatContext);
+    const { user } = useContext(AuthContext)
+
+
+    console.log("UserChat",userChats);
 
     return ( 
         <Container>
@@ -21,7 +24,7 @@ const Chat = () => {
                         {userChats?.map((chat: any, index: Key | null | undefined) => {
                             return (
                                 <div key={index}>
-                                    <UserChat chat={chat} user={user} />
+                                    <UserChat  chat={chat} user={user} />
                                 </div>
                             );
                         })}
