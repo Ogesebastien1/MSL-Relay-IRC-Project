@@ -89,7 +89,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
     });
 
     useEffect(()=>{
-        const userString  = localStorage.getItem("user");
+        const userString  = localStorage.getItem("User");
 
         if (userString ) {
             const userObject = JSON.parse(userString);
