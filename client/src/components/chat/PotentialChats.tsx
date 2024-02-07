@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
+import { AuthContext } from "../../context/AuthContext";
 
 const PotentialChats = () => {
     
@@ -11,19 +12,23 @@ const PotentialChats = () => {
         return null;
     }
 
+    const {user} = useContext(AuthContext);
+
     // Type assertion: tell TypeScript that chatContext is not null here.
-    const {potentialChats} = chatContext!;
+    const {potentialChats, createChat} = chatContext!;
 
     console.log("pchats", potentialChats);
     return (
         <>
             <div className="all-users">
-                {potentialChats && potentialChats.map((u, index) => (
-                    <div className="single-user" key={index}>
+                {potentialChats && potentialChats.map((u, index) => {
+                    return user && (
+                    <div className="single-user" key={index} onClick={()=> createChat(user._id, u._id)}>
                         {u.name}
                         <span className="user-online"></span>
                     </div>
-                ))}
+                    );
+                })}
             </div>
         </>
     );

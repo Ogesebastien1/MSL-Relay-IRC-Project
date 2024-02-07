@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { baseUrl, getRequest } from "../utils/services";
 
+interface User {
+    _id: string;
+    name: string;
+}  
 
-export const useFetchRecipientUser = (chat: { members: any[]; }, user: { _id: string; }) =>{
-    const [recipientUser, setRecipientUser] = useState(null);
-    const [error, setError] = useState(null);
+export const useFetchRecipientUser = (chat: { members: string[]; }, user: { _id: string; }) => {
+    const [recipientUser, setRecipientUser] = useState<User | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const recipientId = chat?.members.find((id: string) => id !==user?._id);
 
