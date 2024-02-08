@@ -17,7 +17,6 @@ const PotentialChats = () => {
     // Type assertion: tell TypeScript that chatContext is not null here.
     const {potentialChats, createChat} = chatContext!;
 
-    console.log("pchats", potentialChats);
     return (
         <>
             <div className="all-users">

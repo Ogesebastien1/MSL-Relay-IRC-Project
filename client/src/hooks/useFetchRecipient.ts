@@ -4,9 +4,16 @@ import { baseUrl, getRequest } from "../utils/services";
 interface User {
     _id: string;
     name: string;
-}  
+}
 
-export const useFetchRecipientUser = (chat: { members: string[]; }, user: { _id: string; }) => {
+interface Chat {
+    _id: string;
+    members: string[];
+    name: string;
+    chat: string;
+}
+
+export const useFetchRecipientUser = (chat: Chat | null | undefined, user: User | null) => {
     const [recipientUser, setRecipientUser] = useState<User | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +34,7 @@ export const useFetchRecipientUser = (chat: { members: string[]; }, user: { _id:
         };
 
         getUser()
-    }, [])
+    }, [recipientId])
 
  return{recipientUser};
 
