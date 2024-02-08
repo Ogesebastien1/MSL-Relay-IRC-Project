@@ -29,10 +29,16 @@ interface ChatContextType {
     potentialChats: Array<Chat>;
     createChat: (firstId: string, secondId: string) => Promise<void>;
     updateCurrentChat: (chat: Chat) => void;
-    messages:Message | null;
+    messages:Message[] | null;
     isMessageLoading: boolean;
     messagesError: ErrorState | null;
     currentChat: Chat | null;
+    sendTextMessage: (
+        textMessage: string, 
+        sender: User, 
+        currentChatId: string, 
+        setTextMessage: React.Dispatch<React.SetStateAction<string>>
+    ) => Promise<void>;
 }
 
 interface ErrorState {
@@ -49,13 +55,16 @@ interface ChatContextProviderProps {
 
 export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, user }) => {
     const [userChats, setUserChats] = useState<Chat[] | null>(null);
-    const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
+    const [isUserChatsLoading, setIsUserChatsLoading] = useState<boolean>(false);
     const [userChatsError, setUserChatsError] = useState<ErrorState | null>(null);
     const [potentialChats, setPotentialChats] = useState<Array<Chat>>([]);
     const [currentChat, setCurrentChat] = useState<Chat | null>(null);
-    const [messages, setMessages] = useState<Message | null>(null);
-    const [isMessageLoading, setIsMessageLoading] = useState(false);
+    const [messages, setMessages] = useState<Message[] | null>([]);
+    const [isMessageLoading, setIsMessageLoading] = useState<boolean>(false);
     const [messagesError, setMessagesError] = useState<ErrorState | null>(null);
+    const [textMessage, setTextMessage] = useState<string>("");
+    const [sendTextMessageError, setSendTextMessageError] = useState<ErrorState | null>(null);
+    const [newMessage, setNewMessage] = useState<Message | null>(null);
 
     console.log("messages", messages);
 
@@ -123,6 +132,23 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         getMessages();
     }, [currentChat]);
 
+    const sendTextMessage = useCallback(async (textMessage: string, sender: User, currentChatId: string, setTextMessage: React.Dispatch<React.SetStateAction<string>>) => {
+        if (!textMessage) console.log("you must type something...");
+
+        const response = await postRequest(`${baseUrl}/messages`, JSON.stringify({
+            chatId: currentChatId,
+            senderId: sender._id,
+            text: textMessage
+        }));
+
+        if (response.error) {
+            return setSendTextMessageError(response);
+        };
+
+        setNewMessage(response);
+        setMessages((prev) => prev ? [...prev, response] : [response]);
+        setTextMessage("");
+    }, [])
 
     const updateCurrentChat = useCallback(((chat: Chat)=>{
         setCurrentChat(chat);
@@ -163,7 +189,8 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             messages,
             isMessageLoading,
             messagesError,
-            currentChat
+            currentChat,
+            sendTextMessage
          }}>
             {children}
         </ChatContext.Provider>
