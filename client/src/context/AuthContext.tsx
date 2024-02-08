@@ -121,7 +121,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
 
         // if no error ...
         // saving user in the local storage to not have to login again
-        localStorage.setItem("user", JSON.stringify(response));
+        localStorage.setItem("User", JSON.stringify(response));
         setUser(response);
 
     }, [registerInfo]
@@ -150,7 +150,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
 
 
     const logoutUser = useCallback(()=>{
-        localStorage.removeItem("user");
+        localStorage.removeItem("User");
         setUser(null);
     }, []);
 

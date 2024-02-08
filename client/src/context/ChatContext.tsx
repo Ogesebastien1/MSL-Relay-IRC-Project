@@ -8,6 +8,14 @@ interface Chat {
     chat: string;
 }
 
+interface Message {
+    [x: string]: any; // needed for map() in ChatBox.tsx
+    _id: string;
+    senderId: string;
+    text: string;
+    creatAt: Date;
+}
+
 interface User {
     _id: string;
     name: string;
@@ -15,11 +23,16 @@ interface User {
 
 interface ChatContextType {
     user:User | null;
-    userChats: any; 
+    userChats: Chat[] | null; 
     isUserChatsLoading: boolean;
-    userChatsError: any; 
+    userChatsError: ErrorState | null; 
     potentialChats: Array<Chat>;
     createChat: (firstId: string, secondId: string) => Promise<void>;
+    updateCurrentChat: (chat: Chat) => void;
+    messages:Message | null;
+    isMessageLoading: boolean;
+    messagesError: ErrorState | null;
+    currentChat: Chat | null;
 }
 
 interface ErrorState {
@@ -39,35 +52,32 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
     const [userChatsError, setUserChatsError] = useState<ErrorState | null>(null);
     const [potentialChats, setPotentialChats] = useState<Array<Chat>>([]);
+    const [currentChat, setCurrentChat] = useState<Chat | null>(null);
+    const [messages, setMessages] = useState<Message | null>(null);
+    const [isMessageLoading, setIsMessageLoading] = useState(false);
+    const [messagesError, setMessagesError] = useState<ErrorState | null>(null);
+
+    console.log("messages", messages);
 
     useEffect(() => {
         async function fetchData() {
-            console.log('Fetching data for user:', user);
-            // First, check if we have a user and load the user's chats
+            // First, check if we have a user and load the user's chats:
             if (user?._id) {
                 setIsUserChatsLoading(true);
-                console.log(`Fetching chats for user ID: ${user._id}`);
 
                 try {
                     const chatsResponse = await getRequest(`${baseUrl}/chats/${user._id}`);
                     setUserChats(chatsResponse);
-                    console.log('Chats response:', chatsResponse);
                 } catch (error: any) {
-                    console.error('Error fetching user chats:', error);
                     setUserChatsError({ message: error.message || 'An unknown error occurred' });
                   }
 
                 setIsUserChatsLoading(false);
-            } else {
-                console.log('No user ID found, skipping fetching chats.');
             }
 
             // Then, load all users
             try {
-                console.log('Fetching all users');
-
                 const usersResponse = await getRequest(`${baseUrl}/users`);
-                console.log('Users response:', usersResponse);
                 if (usersResponse.error) {
                     throw new Error(usersResponse.error);
                 }
@@ -75,19 +85,16 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
                 // Finally, filter potential chats based on loaded user chats
                 const filteredChats = usersResponse.filter((u: {name: string; _id: string; }) => {
                     if (user && user._id === u._id) {
-                        console.log(`Excluding current user from potential chats: ${u.name}`);
                         return false;
                     }
 
                     // Check if a chat with the user already exists
                     const isChatCreated = userChats?.some(chat => {
                         const chatExists = chat.members.includes(u._id);
-                        if (chatExists) console.log(`Chat already exists with user: ${u.name}`);
                         return chatExists;
                     });
                     return !isChatCreated;
                 });
-                console.log('Filtered potential chats:', filteredChats);
                 setPotentialChats(filteredChats);
             } catch (error) {
                 console.error("Error fetching users:", error);
@@ -96,6 +103,30 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
 
         fetchData();
     }, [user]);
+
+    useEffect(()=>{
+        const getMessages = async()=>{
+
+            setIsMessageLoading(true);
+            setMessagesError(null);
+
+            const response = await getRequest(`${baseUrl}/messages/${currentChat?._id}`);
+            
+            setIsMessageLoading(false);
+
+            if (response.error){
+                return setMessagesError(response);
+            }
+            setMessages(response);
+            
+        }
+        getMessages();
+    }, [currentChat]);
+
+
+    const updateCurrentChat = useCallback(((chat: Chat)=>{
+        setCurrentChat(chat);
+    }), []);
 
     // creating a chat
     const createChat = useCallback(async (firstId: string, secondId: string) => {
@@ -127,7 +158,12 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             userChatsError,
             potentialChats,
             user,
-            createChat
+            createChat,
+            updateCurrentChat,
+            messages,
+            isMessageLoading,
+            messagesError,
+            currentChat
          }}>
             {children}
         </ChatContext.Provider>
