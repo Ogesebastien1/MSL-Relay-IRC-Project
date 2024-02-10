@@ -1,5 +1,7 @@
-import React, { createContext, useState, ReactNode, useCallback, useEffect } from "react";
+import React, { createContext, useState, ReactNode, useCallback, useEffect, MouseEvent } from "react";
 import { baseUrl, postRequest } from "../utils/services";
+import { v4 as uuidv4 } from "uuid";
+
 
 type User = {
     _id: string,
@@ -31,6 +33,8 @@ type AuthContextType = {
         email: string; 
         password: string; 
     };
+
+    
     
     updateRegisterInfo: (info: RegisterInfoType) => void;
     registerUser: (e: any) => Promise<void>;
@@ -45,8 +49,8 @@ type AuthContextType = {
     loginUser: (e: React.FormEvent<HTMLFormElement>) => Promise<void>; 
     loginError: ErrorResponse | null;
     updateLoginInfo: (info: loginInfoType) => void; 
-    isLoginLoading: boolean; 
-    
+    isLoginLoading: boolean;  
+    handleAccessAsGuest: (event: React.MouseEvent) => void;
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -62,6 +66,7 @@ const defaultAuthContext: AuthContextType = {
     loginError: null,
     updateLoginInfo: () => {},
     isLoginLoading: false,
+    handleAccessAsGuest: () => {},
 };
 
 interface AuthContextProviderProps {
@@ -154,6 +159,14 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         setUser(null);
     }, []);
 
+    const handleAccessAsGuest = (event: React.MouseEvent<HTMLInputElement>): void => {
+        const uniqueId = uuidv4();
+        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
+    
+        localStorage.setItem('visitorToken', visitorId);
+        console.log("Visitor ID:", visitorId);
+    };
+
     return (
         <AuthContext.Provider value={{
             user, 
@@ -168,6 +181,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             loginInfo,
             updateLoginInfo,
             isLoginLoading,
+            handleAccessAsGuest,
         }}>
             {children}
         </AuthContext.Provider>
