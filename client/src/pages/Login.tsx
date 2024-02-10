@@ -10,9 +10,7 @@ import { AuthContext } from "../context/AuthContext";
 const Login = () => {
 
     const {loginUser, loginError, loginInfo, updateLoginInfo, isLoginLoading, handleAccessAsGuest } = useContext(AuthContext);
-
  
-
     return (
      <>
 

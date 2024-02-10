@@ -50,7 +50,7 @@ type AuthContextType = {
     loginError: ErrorResponse | null;
     updateLoginInfo: (info: loginInfoType) => void; 
     isLoginLoading: boolean;  
-    handleAccessAsGuest: (event: React.MouseEvent) => void;
+    handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -83,11 +83,18 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         name: "",
         email: "",
         password: "",
+
     });
 
     const [loginError, setLoginError] = useState<ErrorResponse | null>(null);
     const [isLoginLoading, setIsLoginLoading] = useState(false);
     const [loginInfo, setLoginInfo] = useState<loginInfoType>({
+        email: "",
+        password: "",
+        name: ""
+    });
+
+    const [visitorInfo, setVisitorInfo] = useState<loginInfoType>({
         email: "",
         password: "",
         name: ""
@@ -159,13 +166,27 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         setUser(null);
     }, []);
 
-    const handleAccessAsGuest = (event: React.MouseEvent<HTMLInputElement>): void => {
+    const handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement> = useCallback(async (event): Promise<void> => {
+        // Generate a random token for the visitor
         const uniqueId = uuidv4();
-        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
+        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`; // Create a custom visitor ID
     
-        localStorage.setItem('visitorToken', visitorId);
-        console.log("Visitor ID:", visitorId);
-    };
+        
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify(visitorId));
+    
+            if (response.error) {
+                console.error('Error establishing session:', response.error);
+                return;
+            }
+    
+            localStorage.setItem('visitorToken', visitorId);
+    
+            console.log('Session established successfully:', response);
+
+
+        
+    }, [visitorInfo]);
+    
 
     return (
         <AuthContext.Provider value={{

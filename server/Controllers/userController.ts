@@ -49,6 +49,33 @@ const registerUser = async (req: any, res: any) => {
     }
 }
 
+const visitorRegister = async (req: any, res: any) => {
+
+    console.log("test before try")
+    try {
+        const {name} = req.body;
+
+        // if name, email or password is empty => Error 400 (Bad request)
+        if (!name) return res.status(400).json("All fields are required!");
+
+        console.log("test before save")
+        const user = new userModel({name});
+
+        await user.save();
+
+        console.log("test after save")
+        const token = createToken(user.id);
+        console.log("test before 200")
+        res.status(200).json({_id: user._id, name, token});
+        console.log("test after 200")
+    } catch (error) {
+        console.log(error);
+        // if there is a problem => Error 500 (Server side error)
+        res.status(500).json(error);
+    }
+}
+
+
 const loginUser = async (req:any, res:any) => {
 
     try {
@@ -98,4 +125,4 @@ const getUsers = async(req:any, res: any) => {
     }
 }
 
-module.exports = { registerUser, loginUser, findUser, getUsers };
+module.exports = { registerUser, loginUser, findUser, getUsers, visitorRegister};
