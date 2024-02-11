@@ -66,7 +66,7 @@ const defaultAuthContext: AuthContextType = {
     loginError: null,
     updateLoginInfo: () => {},
     isLoginLoading: false,
-    handleAccessAsGuest: () => {},
+    handleAccessAsGuest: async () => {},
 };
 
 interface AuthContextProviderProps {
@@ -166,28 +166,21 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         setUser(null);
     }, []);
 
-    const handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement> = useCallback(async (event): Promise<void> => {
-        // Generate a random token for the visitor
+
+    const handleAccessAsGuest = useCallback(async () => {
         const uniqueId = uuidv4();
-        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`; // Create a custom visitor ID
-    
-        
-        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify(visitorId));
-    
-            if (response.error) {
-                console.error('Error establishing session:', response.error);
-                return;
-            }
-    
-            localStorage.setItem('visitorToken', visitorId);
-    
-            console.log('Session established successfully:', response);
+        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ id: uniqueId}));
+        if (response.error) {
+            console.error('Error establishing session:', response.error);
+            return;
+        }
+        localStorage.setItem('visitorToken', visitorId);
+        console.log('Session established successfully:', response);
+    }, []);
 
 
-        
-    }, [visitorInfo]);
     
-
     return (
         <AuthContext.Provider value={{
             user, 

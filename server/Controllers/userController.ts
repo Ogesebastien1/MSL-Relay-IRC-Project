@@ -35,7 +35,7 @@ const registerUser = async (req: any, res: any) => {
 
         // Hashing password
         const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
+        user.password = password ? await bcrypt.hash(password, salt) : undefined;
 
         await user.save();
 
@@ -50,28 +50,28 @@ const registerUser = async (req: any, res: any) => {
 }
 
 const visitorRegister = async (req: any, res: any) => {
-
-    console.log("test before try")
     try {
-        const {name} = req.body;
+        const { name, visitorId } = req.body;
 
-        // if name, email or password is empty => Error 400 (Bad request)
-        if (!name) return res.status(400).json("All fields are required!");
+        // Check if visitorId already exists
+        let user = await userModel.findOne({ visitorId });
 
-        console.log("test before save")
-        const user = new userModel({name});
+        // If visitorId already exists, return an error
+        if (user) {
+            return res.status(400).json({ error: "Visitor ID already exists" });
+        }
+
+        // Create a new user with the provided visitorId
+        user = new userModel({ name, visitorId });
 
         await user.save();
 
-        console.log("test after save")
         const token = createToken(user.id);
-        console.log("test before 200")
-        res.status(200).json({_id: user._id, name, token});
-        console.log("test after 200")
+
+        res.status(200).json({ _id: user._id, name, token });
     } catch (error) {
         console.log(error);
-        // if there is a problem => Error 500 (Server side error)
-        res.status(500).json(error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -85,7 +85,7 @@ const loginUser = async (req:any, res:any) => {
     
         if (!user) return res.status(400).json("Invalid email or password");
     
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = user.password ? await bcrypt.compare(password, user.password) : false;
     
         if (!isValidPassword) return res.status(400).json("Invalid password");
 

@@ -41,9 +41,9 @@ const Login = () => {
                         {loginError?.error  && <Alert variant="danger">
                         <p>{loginError?.message}</p>
                         </Alert>}
-                    <Button variant="outline-secondary" onClick={handleAccessAsGuest}>
-                         Access as Guest
-                    </Button>
+                        <Button variant="outline-secondary" type="button" onClick={handleAccessAsGuest}>
+                        Access as Guest
+                        </Button>
                 </Stack>
                 </Col>
             </Row>
