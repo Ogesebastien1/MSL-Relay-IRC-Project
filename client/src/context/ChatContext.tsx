@@ -1,11 +1,11 @@
 import { createContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
+import { io, Socket } from "socket.io-client";
 
 interface Chat {
+    name: ReactNode;
     _id: string;
     members: string[];
-    name: string;
-    chat: string;
 }
 
 interface Message {
@@ -19,6 +19,11 @@ interface Message {
 interface User {
     _id: string;
     name: string;
+}
+
+interface OnlineUser {
+    userId: string;
+    socketId: string;
 }
 
 interface ChatContextType {
@@ -39,6 +44,7 @@ interface ChatContextType {
         currentChatId: string, 
         setTextMessage: React.Dispatch<React.SetStateAction<string>>
     ) => Promise<void>;
+    onlineUsers: OnlineUser[] | null;
 }
 
 interface ErrorState {
@@ -65,8 +71,58 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [textMessage, setTextMessage] = useState<string>("");
     const [sendTextMessageError, setSendTextMessageError] = useState<ErrorState | null>(null);
     const [newMessage, setNewMessage] = useState<Message | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const [onlineUsers, setOnlineUsers] = useState<OnlineUser[] | null>([]);
 
-    console.log("messages", messages);
+    // initial socket ---
+    useEffect(() => {
+        const newSocket = io("http://localhost:3051");
+        setSocket(newSocket);
+
+        return () => {
+            newSocket.disconnect();
+        }
+        // [user] means, every time we have a new user, a newSocket will be created
+    }, [user]);
+
+    // add online users
+    useEffect(()=>{
+        if (socket === null) return
+        socket?.on("getOnlineUsers", (res)=>{
+            setOnlineUsers(res);
+        });
+        socket?.emit("addUser", user?._id);
+
+        return () => {
+            socket.off("getOnlineUsers");
+        };
+    }, [socket]);
+
+    console.log(userChats);
+
+    // send real-time message
+    useEffect(()=>{
+        if (socket === null) return
+
+        const recipientId = currentChat?.members?.find((id: string) => id !==user?._id);
+        socket.emit("sendMessage", {...newMessage, recipientId})
+    }, [newMessage]);
+
+    // recieve real-time message
+    useEffect(()=>{
+        if (socket === null) return
+        
+        socket.on("getMessage", res => {
+            if (currentChat?._id !== res.chatId) return 
+            
+            setMessages((prev) => prev ? [...prev, res] : [res]);
+        });
+
+        return  () => {
+            socket.off("getMessage");
+        }
+
+    }, [socket, currentChat]);
 
     useEffect(() => {
         async function fetchData() {
@@ -190,7 +246,8 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             isMessageLoading,
             messagesError,
             currentChat,
-            sendTextMessage
+            sendTextMessage,
+            onlineUsers
          }}>
             {children}
         </ChatContext.Provider>

@@ -1,6 +1,8 @@
 import { Stack } from "react-bootstrap";
 import { useFetchRecipientUser } from "../../hooks/useFetchRecipient";
 import avatar from "../../../assets/avatar.svg"
+import { useContext } from "react";
+import { ChatContext } from "../../context/ChatContext";
 
 interface User {
     _id: string;
@@ -8,7 +10,9 @@ interface User {
 }
 
 interface Chat {
+    _id: string;
     members: string[];
+    name: string;
 }
 
 interface UserChatProps {
@@ -16,10 +20,23 @@ interface UserChatProps {
     user: User | null;
 }
 
+interface OnlineUser {
+    userId: string;
+    socketId: string;
+}
+
 const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
+
     if (user) {
-        const {recipientUser} = useFetchRecipientUser(chat, user)
-        
+        const {recipientUser} = useFetchRecipientUser(chat, user);
+        const chatContext = useContext(ChatContext)
+        if (!chatContext) {
+            console.error("ChatContext not available");
+            return null;
+        }
+        const {onlineUsers} = chatContext;
+        const isOnline = onlineUsers?.some((onlineUser:OnlineUser)=>{ return onlineUser?.userId === recipientUser?._id})
+
         return (
             <Stack direction="horizontal" gap={3} className="user-card align-items-center p-2 justify-content-between" role ="button">
                 <div className="d-flex">
@@ -36,7 +53,7 @@ const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
                         12/12/2024
                     </div>
                     <div className="this-user-notifications">2</div>
-                    <span className="user-online"></span>
+                    <span className={isOnline ? "user-online" : ""}></span>
                 </div>
             </Stack>
         );
