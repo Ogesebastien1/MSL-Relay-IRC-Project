@@ -2,6 +2,11 @@ import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { AuthContext } from "../../context/AuthContext";
 
+interface OnlineUser {
+    userId: string;
+    socketId: string;
+}
+
 const PotentialChats = () => {
     
     const chatContext = useContext(ChatContext);
@@ -15,7 +20,7 @@ const PotentialChats = () => {
     const {user} = useContext(AuthContext);
 
     // Type assertion: tell TypeScript that chatContext is not null here.
-    const {potentialChats, createChat} = chatContext!;
+    const {potentialChats, createChat, onlineUsers} = chatContext!;
 
     return (
         <>
@@ -24,7 +29,7 @@ const PotentialChats = () => {
                     return user && (
                     <div className="single-user" key={index} onClick={()=> createChat(user._id, u._id)}>
                         {u.name}
-                        <span className="user-online"></span>
+                        <span className={ onlineUsers?.some((onlineUser:OnlineUser)=>{ return onlineUser?.userId === u._id}) ? "user-online" : ""}></span>
                     </div>
                     );
                 })}

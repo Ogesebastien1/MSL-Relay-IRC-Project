@@ -10,7 +10,6 @@ interface Chat {
     _id: string;
     members: string[];
     name: string;
-    chat: string;
 }
 
 export const useFetchRecipientUser = (chat: Chat | null | undefined, user: User | null) => {
