@@ -51,10 +51,11 @@ const registerUser = async (req: any, res: any) => {
 
 const visitorRegister = async (req: any, res: any) => {
     try {
-        const { name, visitorId } = req.body;
-
+        const { name, email } = req.body;
+        console.log("name in controller", name)
+        console.log("email in controller", email)
     
-        let user = await userModel.findOne({ visitorId });
+        let user = await userModel.findOne({ email });
 
        
         if (user) {
@@ -62,13 +63,13 @@ const visitorRegister = async (req: any, res: any) => {
         }
 
        
-        user = new userModel({ name, visitorId });
+        user = new userModel({ name, email });
 
         await user.save();
 
         const token = createToken(user.id);
-
-        res.status(200).json({ _id: user._id, name, token });
+        console.log("token", token)
+        res.status(200).json({ _id: user._id, name, email, token });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });

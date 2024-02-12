@@ -170,13 +170,18 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
     const handleAccessAsGuest = useCallback(async () => {
         const uniqueId = uuidv4();
         const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
-        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ id: uniqueId , email: uniqueId,}));
+        console.log("visitorId in fetch :", visitorId)
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: visitorId}));
+      
         if (response.error) {
             console.error('Error establishing session:', response.error);
             return;
         }
-        localStorage.setItem('visitorToken', visitorId);
-        console.log('Session established successfully:', response);
+        
+        localStorage.setItem("User", JSON.stringify(response));
+        setUser(response);
+
+        console.log("response", JSON.stringify(response))
     }, []);
 
 
