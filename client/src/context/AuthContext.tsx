@@ -168,7 +168,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         const uniqueId = uuidv4();
         const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
         console.log("visitorId in fetch :", visitorId)
-        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: visitorId}));
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: user?.email}));
       
         if (response.error) {
             console.error('Error establishing session:', response.error);
