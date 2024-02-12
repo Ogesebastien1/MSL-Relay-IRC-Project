@@ -53,15 +53,15 @@ const visitorRegister = async (req: any, res: any) => {
     try {
         const { name, visitorId } = req.body;
 
-        // Check if visitorId already exists
+    
         let user = await userModel.findOne({ visitorId });
 
-        // If visitorId already exists, return an error
+       
         if (user) {
             return res.status(400).json({ error: "Visitor ID already exists" });
         }
 
-        // Create a new user with the provided visitorId
+       
         user = new userModel({ name, visitorId });
 
         await user.save();
