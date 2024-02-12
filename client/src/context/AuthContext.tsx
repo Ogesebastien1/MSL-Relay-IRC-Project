@@ -1,5 +1,7 @@
-import React, { createContext, useState, ReactNode, useCallback, useEffect } from "react";
+import React, { createContext, useState, ReactNode, useCallback, useEffect, MouseEvent } from "react";
 import { baseUrl, postRequest } from "../utils/services";
+import { v4 as uuidv4 } from "uuid";
+
 
 type User = {
     _id: string,
@@ -31,6 +33,8 @@ type AuthContextType = {
         email: string; 
         password: string; 
     };
+
+    
     
     updateRegisterInfo: (info: RegisterInfoType) => void;
     registerUser: (e: any) => Promise<void>;
@@ -45,8 +49,8 @@ type AuthContextType = {
     loginUser: (e: React.FormEvent<HTMLFormElement>) => Promise<void>; 
     loginError: ErrorResponse | null;
     updateLoginInfo: (info: loginInfoType) => void; 
-    isLoginLoading: boolean; 
-    
+    isLoginLoading: boolean;  
+    handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -62,6 +66,7 @@ const defaultAuthContext: AuthContextType = {
     loginError: null,
     updateLoginInfo: () => {},
     isLoginLoading: false,
+    handleAccessAsGuest: async () => {},
 };
 
 interface AuthContextProviderProps {
@@ -78,11 +83,18 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         name: "",
         email: "",
         password: "",
+
     });
 
     const [loginError, setLoginError] = useState<ErrorResponse | null>(null);
     const [isLoginLoading, setIsLoginLoading] = useState(false);
     const [loginInfo, setLoginInfo] = useState<loginInfoType>({
+        email: "",
+        password: "",
+        name: ""
+    });
+
+    const [visitorInfo, setVisitorInfo] = useState<loginInfoType>({
         email: "",
         password: "",
         name: ""
@@ -154,6 +166,26 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         setUser(null);
     }, []);
 
+
+    const handleAccessAsGuest = useCallback(async () => {
+        const uniqueId = uuidv4();
+        const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
+        console.log("visitorId in fetch :", visitorId)
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: visitorId}));
+      
+        if (response.error) {
+            console.error('Error establishing session:', response.error);
+            return;
+        }
+        
+        localStorage.setItem("User", JSON.stringify(response));
+        setUser(response);
+
+        console.log("response", JSON.stringify(response))
+    }, []);
+
+
+    
     return (
         <AuthContext.Provider value={{
             user, 
@@ -168,6 +200,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             loginInfo,
             updateLoginInfo,
             isLoginLoading,
+            handleAccessAsGuest,
         }}>
             {children}
         </AuthContext.Provider>

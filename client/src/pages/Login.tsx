@@ -6,10 +6,11 @@ import Stack from 'react-bootstrap/Stack';
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
+
 const Login = () => {
 
-    const {loginUser, loginError, loginInfo, updateLoginInfo, isLoginLoading } = useContext(AuthContext);
-
+    const {loginUser, loginError, loginInfo, updateLoginInfo, isLoginLoading, handleAccessAsGuest } = useContext(AuthContext);
+ 
     return (
      <>
 
@@ -40,9 +41,13 @@ const Login = () => {
                         {loginError?.error  && <Alert variant="danger">
                         <p>{loginError?.message}</p>
                         </Alert>}
+                        <Button variant="outline-secondary" type="button" onClick={handleAccessAsGuest}>
+                        Access as Guest
+                        </Button>
                 </Stack>
                 </Col>
             </Row>
+
         </Form>
     </> )
 }

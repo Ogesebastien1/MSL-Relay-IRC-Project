@@ -5,6 +5,7 @@ import userRoute from "./Routes/userRoute";
 import chatRoute from "./Routes/chatRoute";
 import messageRoute from "./Routes/messageRoute";
 
+
 const app = express();
 require("dotenv").config()
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use("/api/users", userRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
+app.use('/api/users/visitorRegister', userRoute);
 
 // Read datas
 app.get("/", (_req: any, _res: any) => {

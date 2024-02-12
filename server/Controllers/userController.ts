@@ -35,7 +35,7 @@ const registerUser = async (req: any, res: any) => {
 
         // Hashing password
         const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
+        user.password = password ? await bcrypt.hash(password, salt) : undefined;
 
         await user.save();
 
@@ -49,6 +49,34 @@ const registerUser = async (req: any, res: any) => {
     }
 }
 
+const visitorRegister = async (req: any, res: any) => {
+    try {
+        const { name, email } = req.body;
+        console.log("name in controller", name)
+        console.log("email in controller", email)
+    
+        let user = await userModel.findOne({ email });
+
+       
+        if (user) {
+            return res.status(400).json({ error: "Visitor ID already exists" });
+        }
+
+       
+        user = new userModel({ name, email });
+
+        await user.save();
+
+        const token = createToken(user.id);
+        console.log("token", token)
+        res.status(200).json({ _id: user._id, name, email, token });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+
 const loginUser = async (req:any, res:any) => {
 
     try {
@@ -58,7 +86,7 @@ const loginUser = async (req:any, res:any) => {
     
         if (!user) return res.status(400).json("Invalid email or password");
     
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = user.password ? await bcrypt.compare(password, user.password) : false;
     
         if (!isValidPassword) return res.status(400).json("Invalid password");
 
@@ -98,4 +126,4 @@ const getUsers = async(req:any, res: any) => {
     }
 }
 
-module.exports = { registerUser, loginUser, findUser, getUsers };
+module.exports = { registerUser, loginUser, findUser, getUsers, visitorRegister};
