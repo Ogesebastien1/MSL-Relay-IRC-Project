@@ -14,7 +14,7 @@ interface Chat {
 
 export const useFetchRecipientUser = (chat: Chat | null | undefined, user: User | null) => {
     const [recipientUser, setRecipientUser] = useState<User | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [err, setError] = useState<string | null>(null);
 
     const recipientId = chat?.members.find((id: string) => id !==user?._id);
 
@@ -24,9 +24,9 @@ export const useFetchRecipientUser = (chat: Chat | null | undefined, user: User 
 
             const response = await getRequest(`${baseUrl}/users/find/${recipientId}`);
 
-            if(response.error){
-                return setError(error);
-            }
+            // if(response.status !== 200){
+            //     return setError(err);
+            // }
 
             setRecipientUser(response);
 

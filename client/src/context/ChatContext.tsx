@@ -3,7 +3,7 @@ import { baseUrl, getRequest, postRequest } from "../utils/services";
 import { io, Socket } from "socket.io-client";
 
 interface Chat {
-    name: ReactNode;
+    name: string;
     _id: string;
     members: string[];
 }
@@ -45,6 +45,9 @@ interface ChatContextType {
         setTextMessage: React.Dispatch<React.SetStateAction<string>>
     ) => Promise<void>;
     onlineUsers: OnlineUser[] | null;
+    handleUserSelect: (newUserId: string) => Promise<void>;
+    handleToggleAddUserModal: (() => Promise<void>) | undefined;
+    showAddUserModal: boolean;
 }
 
 interface ErrorState {
@@ -73,6 +76,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [newMessage, setNewMessage] = useState<Message | null>(null);
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[] | null>([]);
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
 
     // initial socket ---
     useEffect(() => {
@@ -97,8 +101,6 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             socket.off("getOnlineUsers");
         };
     }, [socket]);
-
-    console.log(userChats);
 
     // send real-time message
     useEffect(()=>{
@@ -232,6 +234,51 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             return prev ? [...prev, response] : [response];
         });
     }, []);
+
+    // toggle modal visibility
+    const handleToggleAddUserModal = useCallback(async () => {
+        setShowAddUserModal(!showAddUserModal);
+    }, []);
+
+    // add user in chat
+    const handleUserSelect = useCallback( async (userId: string)=>{
+
+        if (!currentChat?._id || !userId) {
+            console.log("currentChat is null!")
+            return;
+        }
+        const data = {
+            chatId : currentChat._id,
+            newUserId : userId
+        }
+
+        try {
+            const response = await postRequest(`${baseUrl}/chats/addUser`, JSON.stringify(data));
+
+            // Handle response
+            if (response.error) {
+                console.error("Failed to add user to chat:", response.error);
+                setShowAddUserModal(false);
+            } else {
+                // Successfully added the user
+                console.log("User added successfully:", response);
+
+                // Close the modal
+                setShowAddUserModal(false);
+
+                setCurrentChat(prevChat => {
+                    if (!prevChat) return null;
+
+                    return {
+                    ...prevChat,
+                    members: [...prevChat.members, userId]
+                    };
+                });
+            }
+        } catch (error) {
+            console.error("An error occurred while adding user to chat:", error);
+        }
+    }, [currentChat]);
     
     return (
         <ChatContext.Provider value={{ 
@@ -247,7 +294,10 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             messagesError,
             currentChat,
             sendTextMessage,
-            onlineUsers
+            onlineUsers,
+            handleUserSelect,
+            handleToggleAddUserModal,
+            showAddUserModal
          }}>
             {children}
         </ChatContext.Provider>

@@ -11,7 +11,6 @@ interface Chat {
     _id: string;
     members: string[];
     name: string;
-    chat: string;
 }
 
 const Chat = () => {
@@ -29,7 +28,7 @@ const Chat = () => {
                 <Stack direction="horizontal" gap={4} className="align-items-start">
                     <Stack className="messages-box flex-grow-0 pe-3" gap={3}>
                         {isUserChatsLoading && <p>Loading chats...</p>}
-                        {userChats?.map((chat: Chat, index: Key | null | undefined) => {
+                        {userChats?.map((chat: Chat, index: Key) => {
                             return (
                                 <div key={index} onClick={()=>updateCurrentChat(chat)}>
                                     <UserChat chat={chat} user={user} />
