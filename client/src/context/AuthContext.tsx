@@ -168,7 +168,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         const uniqueId = uuidv4();
         const visitorId = `Visitor${uniqueId.replace(/-/g, '').slice(0, 6)}`;
         console.log("visitorId in fetch :", visitorId)
-        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: user?.email}));
+        const response = await postRequest(`${baseUrl}/users/visitorRegister`, JSON.stringify({ name: visitorId , email: visitorId}));
       
         if (response.error) {
             console.error('Error establishing session:', response.error);
@@ -185,25 +185,33 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
     const handleChangeName = useCallback(async () => {
         let newName = prompt("Enter your new name:");
 
+        
         if (newName) {
-            try {
-
-                console.log("newname front", newName)
-                console.log("user front", user)
-                // Send a POST request to the backend to update the name
-                const response = await postRequest(`${baseUrl}/users/visitorChangeName`, JSON.stringify({ name: newName, email: user?.email }));
+            const userString = localStorage.getItem("User");
     
-                // Check if there is an error in the response
-                if (response.error) {
-                    console.error('Error updating name:', response.error);
-                    return;
+            if (userString !== null) {
+                const userObject = JSON.parse(userString);
+                console.log(userObject);
+                try {          
+                    console.log("newname front", newName)
+                    console.log("user front", userObject?.email);
+                    // Send a POST request to the backend to update the name
+                    const response = await postRequest(`${baseUrl}/users/visitorChangeName`, JSON.stringify({ name: newName, email: userObject?.email }));
+                    
+                    // Check if there is an error in the response
+                    if (response.error) {
+                        console.error('Error updating name:', response.error);
+                        return;
+                    }
+                    
+                    setUser(response);
+                    
+                    console.log("response", JSON.stringify(response))
+                } catch (error) {
+                    console.error("Error updating name:", error);
                 }
-    
-                setUser(response);
-    
-                console.log("response", JSON.stringify(response))
-            } catch (error) {
-                console.error("Error updating name:", error);
+            } else {
+                console.error("User data not found in localStorage.");
             }
         }
     }, []); 
