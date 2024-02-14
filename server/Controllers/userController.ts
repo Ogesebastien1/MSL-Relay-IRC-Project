@@ -52,8 +52,6 @@ const registerUser = async (req: any, res: any) => {
 const visitorRegister = async (req: any, res: any) => {
     try {
         const { name, email } = req.body;
-        console.log("name in controller", name)
-        console.log("email in controller", email)
     
         let user = await userModel.findOne({ email });
 
@@ -75,6 +73,31 @@ const visitorRegister = async (req: any, res: any) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+const visitorChangeName = async (req: any, res: any) => {
+    try {
+        const { name, email } = req.body;
+        console.log("name received", name)
+        console.log("email received", email)
+        let user = await userModel.findOne({ email });
+
+        console.log("name user", user?.name)
+        console.log("email user", user?.email)
+        if (!user) {
+            return res.status(400).json({ error: "Visitor no existant" });
+        }
+
+       
+        user.name = name;
+        await user.save();
+
+        res.status(200).json({ _id: user._id, name, email });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 
 
 const loginUser = async (req:any, res:any) => {
@@ -126,4 +149,4 @@ const getUsers = async(req:any, res: any) => {
     }
 }
 
-module.exports = { registerUser, loginUser, findUser, getUsers, visitorRegister};
+module.exports = { registerUser, loginUser, findUser, getUsers, visitorRegister, visitorChangeName};

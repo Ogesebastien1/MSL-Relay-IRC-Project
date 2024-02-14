@@ -3,9 +3,12 @@ import { Container, Nav, Navbar, Stack } from "react-bootstrap";
 import {Link} from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+
 const MyNavbar: React.FC = () => {
 
-  const {user, logoutUser} = useContext(AuthContext);
+  const {user, logoutUser, handleChangeName} = useContext(AuthContext);
+
+ 
 
   return (
     <Navbar bg="dark" className="mb-4" style={{ height: "3.75rem" }}>
@@ -13,7 +16,17 @@ const MyNavbar: React.FC = () => {
         <h2>
           <Link to="/" className="link-light text-decoration-none">MSL Relay</Link>
         </h2>
-        {user && <span className = "text-warning">Logged in as {user?.name}</span>}
+        {user && <span className = "text-warning">Logged in as {user?.name} 
+        <button
+              onClick={handleChangeName}
+              className="btn btn-link text-light text-decoration-none"
+            >
+              Change Name
+          </button>
+        </span>
+        
+        }
+       
         <Nav>
           <Stack direction="horizontal" gap={3}>
               {

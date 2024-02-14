@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useCallback, useEffect, MouseEvent } from "react";
+import React, { createContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { baseUrl, postRequest } from "../utils/services";
 import { v4 as uuidv4 } from "uuid";
 
@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 type User = {
     _id: string,
     name: string;
+    email: string;
 }
 
 type RegisterInfoType = {
@@ -50,11 +51,12 @@ type AuthContextType = {
     loginError: ErrorResponse | null;
     updateLoginInfo: (info: loginInfoType) => void; 
     isLoginLoading: boolean;  
-    handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement>;
+    handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement>,
+    handleChangeName: () => void
 };
 
 const defaultAuthContext: AuthContextType = {
-    user: {_id: "",name: ""},
+    user: {_id: "",name: "", email: ""},
     registerInfo: { name: "", email: "", password: "" },
     updateRegisterInfo: () => {},
     registerUser: async () => {},
@@ -67,6 +69,7 @@ const defaultAuthContext: AuthContextType = {
     updateLoginInfo: () => {},
     isLoginLoading: false,
     handleAccessAsGuest: async () => {},
+    handleChangeName: () => {}
 };
 
 interface AuthContextProviderProps {
@@ -89,12 +92,6 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
     const [loginError, setLoginError] = useState<ErrorResponse | null>(null);
     const [isLoginLoading, setIsLoginLoading] = useState(false);
     const [loginInfo, setLoginInfo] = useState<loginInfoType>({
-        email: "",
-        password: "",
-        name: ""
-    });
-
-    const [visitorInfo, setVisitorInfo] = useState<loginInfoType>({
         email: "",
         password: "",
         name: ""
@@ -184,6 +181,42 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
         console.log("response", JSON.stringify(response))
     }, []);
 
+    
+    const handleChangeName = useCallback(async () => {
+        let newName = prompt("Enter your new name:");
+
+        
+        if (newName) {
+            const userString = localStorage.getItem("User");
+    
+            if (userString !== null) {
+                const userObject = JSON.parse(userString);
+                console.log(userObject);
+                try {          
+                    console.log("newname front", newName)
+                    console.log("user front", userObject?.email);
+                    // Send a POST request to the backend to update the name
+                    const response = await postRequest(`${baseUrl}/users/visitorChangeName`, JSON.stringify({ name: newName, email: userObject?.email }));
+                    
+                    // Check if there is an error in the response
+                    if (response.error) {
+                        console.error('Error updating name:', response.error);
+                        return;
+                    }
+                    
+                    setUser(response);
+                    
+                    console.log("response", JSON.stringify(response))
+                } catch (error) {
+                    console.error("Error updating name:", error);
+                }
+            } else {
+                console.error("User data not found in localStorage.");
+            }
+        }
+    }, []); 
+    
+
 
     
     return (
@@ -201,6 +234,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             updateLoginInfo,
             isLoginLoading,
             handleAccessAsGuest,
+            handleChangeName,
         }}>
             {children}
         </AuthContext.Provider>

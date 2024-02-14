@@ -57,4 +57,30 @@ const findChat = async (req:any, res:any) => {
     }
 }
 
-module.exports = { createChat, findUserChats, findChat };
+// addUser
+const addUser = async (req:any, res:any) => {
+    const {newUserId, chatId} = req.body;
+
+    try {
+        const chat = await chatModel.findOne({
+            _id: chatId
+        });
+
+        if (!chat) return res.status(400).json("Room not existant!");
+
+        // Check if user is already a member of the chatroom to avoid duplicates
+        if (chat.members.includes(newUserId)) {
+            return res.status(400).json("User already in the room!");
+        }
+
+        chat.members.push(newUserId);
+
+        const updatedChat = await chat.save();
+        res.status(200).json(updatedChat);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+}
+
+module.exports = { createChat, findUserChats, findChat, addUser };
