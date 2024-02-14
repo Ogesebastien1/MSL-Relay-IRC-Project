@@ -238,7 +238,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     // toggle modal visibility
     const handleToggleAddUserModal = useCallback(async () => {
         setShowAddUserModal(!showAddUserModal);
-    }, []);
+    }, [showAddUserModal]);
 
     // add user in chat
     const handleUserSelect = useCallback( async (userId: string)=>{
