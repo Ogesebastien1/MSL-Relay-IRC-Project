@@ -35,8 +35,6 @@ type AuthContextType = {
         password: string; 
     };
 
-    
-    
     updateRegisterInfo: (info: RegisterInfoType) => void;
     registerUser: (e: any) => Promise<void>;
     registerError: ErrorResponse | null;

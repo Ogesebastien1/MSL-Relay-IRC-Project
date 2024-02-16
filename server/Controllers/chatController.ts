@@ -3,28 +3,62 @@ import chatModel from "../Models/chatModel";
 // createChat
 const createChat = async (req: any, res: any) => {
 
-    const {firstId, secondId} = req.body;
+    const {firstId, secondId, chatName} = req.body;
 
     try {
-        const chat = await chatModel.findOne({
-            members: {$all:[firstId, secondId]}
-        });
-
-        if (chat) return res.status(200).json(chat);
-
-        const newChat = new chatModel({
-            members: [firstId, secondId]
-        });
-
-        const response = await newChat.save();
-
-        res.status(200).json(response);
+        
+        if (secondId && !chatName){
+            const chat = await chatModel.findOne({
+                members: {$all:[firstId, secondId]}
+            });
+    
+            if (chat) return res.status(200).json(chat);
+            const newChat = new chatModel({
+                members: [firstId, secondId]
+            });
+            const response = await newChat.save();
+            res.status(200).json(response);
+        }else if(!secondId && chatName){
+            const chat = await chatModel.findOne({
+                members: {$all:[firstId]},
+                chatName: chatName
+            });
+    
+            if (chat) return res.status(200).json(chat);
+            const newChat = new chatModel({
+                members: [firstId],
+                chatName: chatName
+            });
+            const response = await newChat.save();
+            res.status(200).json(response);
+        }
 
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
     }
 }
+
+//deleteChat
+const deleteChat = async (req:any, res:any)=>{
+    const {chatName} = req.body;
+    
+    try {
+        const result = await chatModel.deleteOne({ chatName: chatName });
+
+        // if a document was not deleted
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "No existent chat with the given name." });
+        }
+
+        res.status(200).json({ message: "Chat deleted successfully." });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error);
+    }
+}
+
 // findUserChats
 const findUserChats = async (req:any, res:any) => {
     const userId = req.params.userId;
@@ -83,4 +117,4 @@ const addUser = async (req:any, res:any) => {
     }
 }
 
-module.exports = { createChat, findUserChats, findChat, addUser };
+module.exports = { createChat, deleteChat, findUserChats, findChat, addUser };

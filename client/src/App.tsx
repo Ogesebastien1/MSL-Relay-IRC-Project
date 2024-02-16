@@ -24,7 +24,7 @@ function App() {
           <Route path="*" element = {<Navigate to="/"/>} />
         </Routes>
       </Container>
-    </ChatContextProvider> // Change made here
+    </ChatContextProvider>
   );
   
 }
