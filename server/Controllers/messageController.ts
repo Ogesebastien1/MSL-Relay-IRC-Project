@@ -3,10 +3,10 @@ import messageModel from "../Models/messageModel";
 // createMessage
 
 export const createMessage = async(req : any, res : any) => {
-    const {chatId, senderId, text} = req.body
+    const {chatId, senderId, text, senderName} = req.body
 
     const message = new messageModel({
-        chatId, senderId, text
+        chatId, senderId, text, senderName
     })
 
  try    {

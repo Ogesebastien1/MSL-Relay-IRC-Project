@@ -12,6 +12,7 @@ export interface Message {
     senderId: string;
     text: string;
     creatAt: Date;
+    senderName: string;
 }
 
 export interface User {

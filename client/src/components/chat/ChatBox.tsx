@@ -7,13 +7,8 @@ import moment from "moment";
 import InputEmoji from "react-input-emoji";
 import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
-
-interface Message {
-    _id: string;
-    senderId: string;
-    text: string;
-    creatAt: Date;
-}
+import avatar from "../../../assets/avatar_white.png"
+import { Message } from '../../types/ChatContextTypes';
 
 const ChatBox = () => {
 
@@ -84,6 +79,7 @@ const ChatBox = () => {
             <Stack gap={3} className="messages">
                 {messages && messages.map((message: Message, index: Key)=> (
                     <Stack key={index} className={`${message?.senderId === user?._id ? "message self align-self-end flex-grow-0" : "message align-self-start flex-grow-0"}`}>
+                        <span className="text-white bg-succes p-1 rounded fw-bold"><img src={avatar} height="20px"/>&nbsp;&nbsp;{ message?.senderName }</span>
                         <span>{message.text}</span>
                         <span className="message-footer">{moment(message.creatAt).calendar()}</span>
                     </Stack>

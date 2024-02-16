@@ -148,7 +148,8 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         const response = await postRequest(`${baseUrl}/messages`, JSON.stringify({
             chatId: currentChatId,
             senderId: sender._id,
-            text: textMessage
+            text: textMessage,
+            senderName: sender.name
         }));
 
         if (response.error) {
