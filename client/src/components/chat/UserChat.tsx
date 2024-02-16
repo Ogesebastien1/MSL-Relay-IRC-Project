@@ -1,6 +1,7 @@
 import { Stack } from "react-bootstrap";
 import { useFetchRecipientUser } from "../../hooks/useFetchRecipient";
 import avatar from "../../../assets/avatar.svg"
+import group from "../../../assets/group.svg"
 import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
 
@@ -10,9 +11,9 @@ interface User {
 }
 
 interface Chat {
+    chatName: string;
     _id: string;
     members: string[];
-    name: string;
 }
 
 interface UserChatProps {
@@ -27,6 +28,10 @@ interface OnlineUser {
 
 const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
 
+    if (!chat || !user) {
+        return <div>Loading...</div>;
+      }
+
     if (user) {
         const {recipientUser} = useFetchRecipientUser(chat, user);
         const chatContext = useContext(ChatContext)
@@ -40,11 +45,10 @@ const UserChat: React.FC<UserChatProps> = ({ chat, user }) => {
         return (
             <Stack direction="horizontal" gap={3} className="user-card align-items-center p-2 justify-content-between" role ="button">
                 <div className="d-flex">
-                    <div className="me-2">
-                        <img src={avatar} height="35px"/>
+                    <div className="me-2">{chat.chatName ? <img src={group} height="35px"/> : <img src={avatar} height="35px"/>}
                     </div>
                     <div className="text-content">
-                        <div className="name">{recipientUser?.name}</div>
+                        <div className="name">{chat.chatName ? chat.chatName : recipientUser?.name}</div>
                         <div className="text">Text Message</div>
                     </div>
                 </div>

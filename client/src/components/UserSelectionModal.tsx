@@ -11,7 +11,7 @@ interface UserSelectionModalProps {
     isOpen: boolean | undefined;
     onClose: (() => Promise<void>) | undefined;
     onUserSelect: ((newUserId: string) => Promise<void>) | undefined;
-    users: User[];
+    users: User[] | [];
 }
 
 const UserSelectionModal: React.FC<UserSelectionModalProps> = ({ isOpen, onClose, onUserSelect, users}) => {

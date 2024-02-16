@@ -1,72 +1,17 @@
-import { createContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback, useContext } from "react";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
 import { io, Socket } from "socket.io-client";
-
-interface Chat {
-    name: string;
-    _id: string;
-    members: string[];
-}
-
-interface Message {
-    [x: string]: any; // needed for map() in ChatBox.tsx
-    _id: string;
-    senderId: string;
-    text: string;
-    creatAt: Date;
-}
-
-interface User {
-    _id: string;
-    name: string;
-}
-
-interface OnlineUser {
-    userId: string;
-    socketId: string;
-}
-
-interface ChatContextType {
-    user:User | null;
-    userChats: Chat[] | null; 
-    isUserChatsLoading: boolean;
-    userChatsError: ErrorState | null; 
-    potentialChats: Array<Chat>;
-    createChat: (firstId: string, secondId: string) => Promise<void>;
-    updateCurrentChat: (chat: Chat) => void;
-    messages:Message[] | null;
-    isMessageLoading: boolean;
-    messagesError: ErrorState | null;
-    currentChat: Chat | null;
-    sendTextMessage: (
-        textMessage: string, 
-        sender: User, 
-        currentChatId: string, 
-        setTextMessage: React.Dispatch<React.SetStateAction<string>>
-    ) => Promise<void>;
-    onlineUsers: OnlineUser[] | null;
-    handleUserSelect: (newUserId: string) => Promise<void>;
-    handleToggleAddUserModal: (() => Promise<void>) | undefined;
-    showAddUserModal: boolean;
-}
-
-interface ErrorState {
-    message: string;
-  }
+//import { inputHandler } from "../utils/inputMessage";
+import { ChatContextType, ChatContextProviderProps, Chat, Message, User, OnlineUser, ErrorState } from '../types/ChatContextTypes';
+import { AuthContext } from "./AuthContext";
 
 export const ChatContext = createContext<ChatContextType | null>(null);
-
-
-interface ChatContextProviderProps {
-    children: ReactNode;
-    user: User | null;
-}
 
 export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, user }) => {
     const [userChats, setUserChats] = useState<Chat[] | null>(null);
     const [isUserChatsLoading, setIsUserChatsLoading] = useState<boolean>(false);
     const [userChatsError, setUserChatsError] = useState<ErrorState | null>(null);
-    const [potentialChats, setPotentialChats] = useState<Array<Chat>>([]);
+    const [potentialChats, setPotentialChats] = useState<Array<User>>([]);
     const [currentChat, setCurrentChat] = useState<Chat | null>(null);
     const [messages, setMessages] = useState<Message[] | null>([]);
     const [isMessageLoading, setIsMessageLoading] = useState<boolean>(false);
@@ -77,6 +22,9 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[] | null>([]);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
+
+    const authContext = useContext(AuthContext);
+    const chatContext = useContext(ChatContext);
 
     // initial socket ---
     useEffect(() => {
@@ -126,6 +74,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
 
     }, [socket, currentChat]);
 
+    // potential chats
     useEffect(() => {
         async function fetchData() {
             // First, check if we have a user and load the user's chats:
@@ -171,6 +120,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         fetchData();
     }, [user]);
 
+    // to get all messages of current chat/channel
     useEffect(()=>{
         const getMessages = async()=>{
 
@@ -190,7 +140,9 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         getMessages();
     }, [currentChat]);
 
+    // to send message
     const sendTextMessage = useCallback(async (textMessage: string, sender: User, currentChatId: string, setTextMessage: React.Dispatch<React.SetStateAction<string>>) => {
+
         if (!textMessage) console.log("you must type something...");
 
         const response = await postRequest(`${baseUrl}/messages`, JSON.stringify({
@@ -208,18 +160,17 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         setTextMessage("");
     }, [])
 
+    // to update the current chat
     const updateCurrentChat = useCallback(((chat: Chat)=>{
         setCurrentChat(chat);
     }), []);
 
-    // creating a chat
-    const createChat = useCallback(async (firstId: string, secondId: string) => {
-        // Construct an object that includes both firstId and secondId
-        const chatData = {
-            firstId: firstId,
-            secondId: secondId
-        };
-
+    // creating a chat/channel
+    const createChat = useCallback(async (firstId: string, secondId?: string, chatName?: string) => {
+        // Construct an object that includes user/users
+        let chatData = {}
+        secondId ? chatData = {firstId: firstId, secondId: secondId} : chatData = {firstId: firstId, chatName: chatName};
+        
         // Stringify the object to send as the body of POST request
         const response = await postRequest(`${baseUrl}/chats`, JSON.stringify(chatData));
 
@@ -234,13 +185,35 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             return prev ? [...prev, response] : [response];
         });
     }, []);
+    // delete chat/channel
+    const deleteChat = useCallback(async (chatName: string)=>{
+
+        const data = JSON.stringify({ chatName });
+        const response = await postRequest(`${baseUrl}/chats/delete`, data);
+
+        if (response.error) {
+            return console.log("Error deleting chat", response);
+        }
+
+        // Filter out the deleted chat from the userChats state
+        setUserChats((prev) => {
+            // If prev is null, just return null
+            if (prev === null) return null;
+    
+            // Filter out the deleted chat and return the new array
+            const updatedChats = prev.filter(chat => chat.chatName !== chatName);
+    
+            // Return the updated chats array, which will always be an array, thus matching Chat[] | null
+            return updatedChats.length > 0 ? updatedChats : null;
+        });
+    },[])
 
     // toggle modal visibility
     const handleToggleAddUserModal = useCallback(async () => {
         setShowAddUserModal(!showAddUserModal);
     }, [showAddUserModal]);
 
-    // add user in chat
+    // add user in chat/channel
     const handleUserSelect = useCallback( async (userId: string)=>{
 
         if (!currentChat?._id || !userId) {
@@ -266,7 +239,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
                 // Close the modal
                 setShowAddUserModal(false);
 
-                setCurrentChat(prevChat => {
+                setCurrentChat((prevChat) => {
                     if (!prevChat) return null;
 
                     return {
@@ -297,7 +270,8 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             onlineUsers,
             handleUserSelect,
             handleToggleAddUserModal,
-            showAddUserModal
+            showAddUserModal,
+            deleteChat
          }}>
             {children}
         </ChatContext.Provider>
