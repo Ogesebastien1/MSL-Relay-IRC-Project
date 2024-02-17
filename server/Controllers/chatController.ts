@@ -59,6 +59,69 @@ const deleteChat = async (req:any, res:any)=>{
     }
 }
 
+//joinChat
+const joinChat = async (req:any, res:any)=>{
+    const { chatName, userId } = req.body;
+
+    try {
+        // Check if the chat exists in the database
+        const existingChat = await chatModel.findOne({ chatName : chatName });
+
+        // If the chat doesn't exist, return a 404 error
+        if (!existingChat) {
+            return res.status(404).json({ message: "No chat found with the given name." });
+        }
+ 
+        // Check if the user is already in the chat
+        if (existingChat.members.includes(userId)) {
+            return res.status(400).json({ message: "User is already in the chat." });
+        }
+
+        existingChat.members.push(userId); // Add user to chat
+        await existingChat.save(); // Save changes
+
+        console.log("existingChat", existingChat)
+
+
+        res.status(200).json(existingChat);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error);
+    }
+}
+//quitChat
+const quitChat = async (req:any, res:any)=>{
+    const { chatName, userId } = req.body;
+
+    try {
+        // Check if the chat exists in the database
+        const existingChat = await chatModel.findOne({ chatName });
+
+        // If the chat doesn't exist, return a 404 error
+        if (!existingChat) {
+            return res.status(404).json({ message: "No chat found with the given name." });
+        }
+
+        const index = existingChat.members.indexOf(userId);
+        console.log("userId before remove function", userId)
+        if (index !== -1) {
+            existingChat.members.splice(index, 1); // Remove userId from members array
+            await existingChat.save(); // Save changes
+        } else {
+            return res.status(400).json({ message: "User is not a member of this chat." });
+        }
+        console.log("userId before after remove function", userId)
+        res.status(200).json({ message: "Quit chat successfully." });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error);
+    }
+}
+
+
+
 // findUserChats
 const findUserChats = async (req:any, res:any) => {
     const userId = req.params.userId;
@@ -117,4 +180,4 @@ const addUser = async (req:any, res:any) => {
     }
 }
 
-module.exports = { createChat, deleteChat, findUserChats, findChat, addUser };
+module.exports = { createChat, deleteChat, findUserChats, findChat, addUser, joinChat, quitChat};

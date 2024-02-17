@@ -22,7 +22,6 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[] | null>([]);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
-
     const authContext = useContext(AuthContext);
     const chatContext = useContext(ChatContext);
 
@@ -209,6 +208,66 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         });
     },[])
 
+     // join channel
+     const joinChat = useCallback(async (chatName: string, ) => {
+        
+        const userId = user?._id;  
+        try {
+            const data = JSON.stringify({ chatName, userId});
+            const response = await postRequest(`${baseUrl}/chats/join`, data); // Adjust the URL accordingly
+            console.log("response" , response)
+            if (response.error) {
+                // Show error message to the user in a prompt
+                alert("Already in chat");
+                return console.log("Already in chat");
+            }
+             // Update the userChats state
+            setUserChats((prev) => {
+
+            return prev ? [...prev, response] : [response];
+            })
+    
+            // Handle successful join, if needed
+            console.log("Joined chat successfully");
+        } catch (error) {
+            console.error("Error joining chat", error);
+        }
+
+    
+
+    }, [user]);
+
+     // quit channel
+    const quitChat = useCallback(async (chatName: string) => {
+
+        const userId = user?._id;  
+        try {
+            const data = JSON.stringify({ chatName, userId});
+            const response = await postRequest(`${baseUrl}/chats/quit`, data);
+    
+            if (response.error) {
+                return console.log("Error quitting chat", response);
+            }
+    
+            // Handle successful quit, if needed
+            console.log("Quit chat successfully");
+        } catch (error) {
+            console.error("Error quitting chat", error);
+        }
+
+        // Filter out the deleted chat from the userChats state
+        setUserChats((prev) => {
+            // If prev is null, just return null
+            if (prev === null) return null;
+    
+            // Filter out the deleted chat and return the new array
+            const updatedChats = prev.filter(chat => chat.chatName !== chatName);
+    
+            // Return the updated chats array, which will always be an array, thus matching Chat[] | null
+            return updatedChats.length > 0 ? updatedChats : null;
+        });
+    }, [user]);
+
     // toggle modal visibility
     const handleToggleAddUserModal = useCallback(async () => {
         setShowAddUserModal(!showAddUserModal);
@@ -272,7 +331,9 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             handleUserSelect,
             handleToggleAddUserModal,
             showAddUserModal,
-            deleteChat
+            deleteChat,
+            joinChat,
+            quitChat
          }}>
             {children}
         </ChatContext.Provider>

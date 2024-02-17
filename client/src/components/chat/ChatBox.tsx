@@ -13,7 +13,7 @@ import { Message } from '../../types/ChatContextTypes';
 const ChatBox = () => {
 
     const {user} = useContext(AuthContext);
-    const { currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat } = useContext(ChatContext) ?? {};
+    const { currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
 
@@ -54,6 +54,16 @@ const ChatBox = () => {
                     if (deleteChat) await deleteChat(argument)
                     setTextMessage('');
                     break;
+                case '/join':
+                    if (!argument) return false;
+                    if (joinChat) await joinChat(argument)
+                    setTextMessage('');
+                    break;
+                case '/quit':
+                    if (!argument) return false;
+                    if (quitChat) await quitChat(argument)
+                    setTextMessage('');
+                break;
                 default:
                     console.log("Unknown command:", command);
                     return false;  
