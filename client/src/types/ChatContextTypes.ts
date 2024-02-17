@@ -52,6 +52,8 @@ export interface ChatContextType {
     handleToggleAddUserModal: (() => Promise<void>) | undefined;
     showAddUserModal: boolean;
     deleteChat: (chatName: string) => Promise<void>;
+    joinChat: (chatName: string) => Promise<void>;
+    quitChat: (chatName: string) => Promise<void>
 }
 
 export interface ChatContextProviderProps {
