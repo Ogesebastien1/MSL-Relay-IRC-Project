@@ -8,7 +8,7 @@ import InputEmoji from "react-input-emoji";
 import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
-import { Chat, Message } from '../../types/ChatContextTypes';
+import { Message } from '../../types/ChatContextTypes';
 
 const ChatBox = () => {
 
@@ -16,16 +16,16 @@ const ChatBox = () => {
     const {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
-    const [userChats, setUserChats] = useState<Chat[] | null>(null);
 
     
 
-    const listUsersInChannel = async () => {
+     // Function to list users in the current chat
+     const listUsersInChannel = async () => {
         if (!user || !currentChat) return;
-    
+
         // Ensure potentialChats is not undefined
         const users = potentialChats ?? [];
-    
+
         // Extract user names
         const names: string[] = [];
         currentChat.members.forEach((userId: string) => {
@@ -34,7 +34,7 @@ const ChatBox = () => {
                 names.push(user.name);
             }
         });
-        
+
         // Show the user names in an alert
         alert(`Users in the channel: ${names.join(", ")}`);
     };
