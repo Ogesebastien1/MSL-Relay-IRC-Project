@@ -9,11 +9,14 @@ import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
 import { Message } from '../../types/ChatContextTypes';
+import { postRequest, baseUrl, getRequest } from '../../utils/services';
+import Chat from "../../pages/Chat";
 
 const ChatBox = () => {
 
     const {user, changeNickname} = useContext(AuthContext);
-    const {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
+    const 
+    {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat} = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
 
@@ -38,6 +41,38 @@ const ChatBox = () => {
         // Show the user names in an alert
         alert(`Users in the channel: ${names.join(", ")}`);
     };
+
+    const listChannel = async (argument?: string) => {
+    try {
+        // Make a GET request to list channels
+        const response = await getRequest(`${baseUrl}/chats/list`);
+
+        if (response.error) {
+            throw new Error(response.message || 'Failed to list channels');
+        }
+
+        let results = "";
+
+        if(argument){
+            response.forEach((chat: { chatName: string; }) => {
+                if (chat.chatName.includes(argument)){
+                    results += chat.chatName + ", "
+                }else{
+                    return
+                }
+            });
+        }else{
+            response.forEach((chat: { chatName: string; }) => {
+                results += chat.chatName + ", "
+            });
+        }
+        // Display the accumulated chat names in one alert
+        alert(`Chat Names: ${results}`);
+    } catch (error: any) {
+        console.error('Error listing channels:', error.message);
+    }
+};
+
 
 
 
@@ -96,6 +131,11 @@ const ChatBox = () => {
                 case '/users':
                     if (argument) return false;
                     await listUsersInChannel();
+                    setTextMessage('');
+                    break;  
+                case '/list':
+                    if (argument) await listChannel(argument);
+                    if (!argument) await listChannel();
                     setTextMessage('');
                     break;  
                 default:
