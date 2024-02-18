@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 export interface Chat {
+    name: any;
     chatName: string;
     _id: string;
     members: string[];
@@ -11,6 +12,7 @@ export interface Message {
     _id: string;
     senderId: string;
     text: string;
+    type: 'message' | 'notification';
     creatAt: Date;
     senderName: string;
 }
@@ -53,7 +55,7 @@ export interface ChatContextType {
     showAddUserModal: boolean;
     deleteChat: (chatName: string) => Promise<void>;
     joinChat: (chatName: string) => Promise<void>;
-    quitChat: (chatName: string) => Promise<void>
+    quitChat: (chatName: string) => Promise<void>;
 }
 
 export interface ChatContextProviderProps {

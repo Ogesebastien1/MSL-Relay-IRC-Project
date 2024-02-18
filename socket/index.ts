@@ -30,12 +30,48 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", onlineUsers);
   });
 
-  // add message
-  socket.on("sendMessage", (message)=>{
-    const user = onlineUsers.find((onlineUser: OnlineUser) => onlineUser.userId === message.recipientId);
-    if (user){
-      io.to(user.socketId).emit("getMessage", message);
+  // send message
+  socket.on("sendMessage", (message) => {
+    if (message.isChannel) {
+      message.members.forEach((memberId: string) => {
+        const memberUser = onlineUsers.find((onlineUser: OnlineUser) => onlineUser.userId === memberId && onlineUser.userId !== message.senderId);
+        if (memberUser) {
+          io.to(memberUser.socketId).emit("getMessage", message);
+        }
+      });
+    } else {
+      const user = onlineUsers.find((onlineUser: OnlineUser) => onlineUser.userId === message.recipientId);
+      if (user) {
+        io.to(user.socketId).emit("getMessage", message);
+      }
     }
+  });
+
+  // emitting a notification message when a user joins a chat
+  socket.on("joinChat", ({ joinedChatName, userId, userName, members }) => {
+    members.forEach((memberId: string) => {
+      let onlineMemberUser = onlineUsers.find((onlineUser: OnlineUser) => onlineUser.userId === memberId && onlineUser.userId !== userId);
+      if (onlineMemberUser) {
+        io.to(onlineMemberUser.socketId).emit('notification', {
+          type: 'notification',
+          text: `${userName} has joined ${joinedChatName}`
+        });
+      }
+    });
+  });
+
+  // emitting a notification message when a user quit a chat
+  socket.on("quitChat", ({ quitChatName, userId, userName, members }) => {
+    console.log("triggered", quitChatName, userId, userName, members)
+    members.forEach((memberId: string) => {
+      let onlineMemberUser = onlineUsers.find((onlineUser: OnlineUser) => onlineUser.userId === memberId && onlineUser.userId !== userId);
+      if (onlineMemberUser) {
+        io.to(onlineMemberUser.socketId).emit('notification', {
+          type: 'notification',
+          text: `${userName} has quitted ${quitChatName}`
+        });
+      }
+    });
   });
 
   socket.on("disconnect", ()=>{

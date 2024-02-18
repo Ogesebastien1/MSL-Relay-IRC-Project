@@ -9,13 +9,72 @@ import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
 import { Message } from '../../types/ChatContextTypes';
+import { postRequest, baseUrl, getRequest } from '../../utils/services';
+import Chat from "../../pages/Chat";
 
 const ChatBox = () => {
 
-    const {user} = useContext(AuthContext);
-    const { currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
+    const {user, changeNickname} = useContext(AuthContext);
+    const 
+    {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat} = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
+
+    
+
+     // Function to list users in the current chat
+     const listUsersInChannel = async () => {
+        if (!user || !currentChat) return;
+
+        // Ensure potentialChats is not undefined
+        const users = potentialChats ?? [];
+
+        // Extract user names
+        const names: string[] = [];
+        currentChat.members.forEach((userId: string) => {
+            const user = users.find((user) => user._id === userId);
+            if (user) {
+                names.push(user.name);
+            }
+        });
+
+        // Show the user names in an alert
+        alert(`Users in the channel: ${names.join(", ")}`);
+    };
+
+    const listChannel = async (argument?: string) => {
+    try {
+        // Make a GET request to list channels
+        const response = await getRequest(`${baseUrl}/chats/list`);
+
+        if (response.error) {
+            throw new Error(response.message || 'Failed to list channels');
+        }
+
+        let results = "";
+
+        if(argument){
+            response.forEach((chat: { chatName: string; }) => {
+                if (chat.chatName.includes(argument)){
+                    results += chat.chatName + ", "
+                }else{
+                    return
+                }
+            });
+        }else{
+            response.forEach((chat: { chatName: string; }) => {
+                results += chat.chatName + ", "
+            });
+        }
+        // Display the accumulated chat names in one alert
+        alert(`Chat Names: ${results}`);
+    } catch (error: any) {
+        console.error('Error listing channels:', error.message);
+    }
+};
+
+
+
 
     if (!recipientUser){
         return (
@@ -64,6 +123,21 @@ const ChatBox = () => {
                     if (quitChat) await quitChat(argument)
                     setTextMessage('');
                 break;
+                case '/nick':
+                    if (!argument) return false;
+                    if (changeNickname) await changeNickname(argument)
+                    setTextMessage('');
+                break;
+                case '/users':
+                    if (argument) return false;
+                    await listUsersInChannel();
+                    setTextMessage('');
+                    break;  
+                case '/list':
+                    if (argument) await listChannel(argument);
+                    if (!argument) await listChannel();
+                    setTextMessage('');
+                    break;  
                 default:
                     console.log("Unknown command:", command);
                     return false;  
@@ -83,16 +157,22 @@ const ChatBox = () => {
                 isOpen={showAddUserModal} 
                 onClose={handleToggleAddUserModal} 
                 onUserSelect={handleUserSelect} 
-                users={potentialChats ?? []} // Assuming potentialChats is an array of user objects
+                users={potentialChats ?? []}
             />
             </div>
             <Stack gap={3} className="messages">
                 {messages && messages.map((message: Message, index: Key)=> (
-                    <Stack key={index} className={`${message?.senderId === user?._id ? "message self align-self-end flex-grow-0" : "message align-self-start flex-grow-0"}`}>
-                        <span className="text-white bg-succes p-1 rounded fw-bold"><img src={avatar} height="20px"/>&nbsp;&nbsp;{ message?.senderName }</span>
-                        <span>{message.text}</span>
-                        <span className="message-footer">{moment(message.creatAt).calendar()}</span>
-                    </Stack>
+                    message.type === 'notification' ?
+
+                        <Stack key={index} className="notification-message">
+                        {message.text}
+                        </Stack>                    
+                        :
+                        <Stack key={index} className={`${message?.senderId === user?._id ? "message self align-self-end flex-grow-0" : "message align-self-start flex-grow-0"}`}>
+                            <span className="text-white bg-succes p-1 rounded fw-bold"><img src={avatar} height="20px"/>&nbsp;&nbsp;{ message?.senderName }</span>
+                            <span>{message.text}</span>
+                            <span className="message-footer">{moment(message.creatAt).calendar()}</span>
+                        </Stack>
                 ))}
             </Stack>
             <Stack direction="horizontal" gap={3} className="chat-input flex-grow-0">

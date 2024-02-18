@@ -80,9 +80,6 @@ const joinChat = async (req:any, res:any)=>{
         existingChat.members.push(userId); // Add user to chat
         await existingChat.save(); // Save changes
 
-        console.log("existingChat", existingChat)
-
-
         res.status(200).json(existingChat);
 
     } catch (error) {
@@ -104,15 +101,13 @@ const quitChat = async (req:any, res:any)=>{
         }
 
         const index = existingChat.members.indexOf(userId);
-        console.log("userId before remove function", userId)
         if (index !== -1) {
             existingChat.members.splice(index, 1); // Remove userId from members array
             await existingChat.save(); // Save changes
         } else {
             return res.status(400).json({ message: "User is not a member of this chat." });
         }
-        console.log("userId before after remove function", userId)
-        res.status(200).json({ message: "Quit chat successfully." });
+        res.status(200).json(existingChat);
 
     } catch (error) {
         console.log(error);
@@ -180,4 +175,23 @@ const addUser = async (req:any, res:any) => {
     }
 }
 
-module.exports = { createChat, deleteChat, findUserChats, findChat, addUser, joinChat, quitChat};
+const listChat = async (req: any, res: any) => {
+    const { chatName } = req.body;
+
+    try {
+        // If the chat exists, retrieve the list of chats
+        const chats = await chatModel.find({ chatName: { $exists: true }});;
+
+        // Send the list of chats to the front end
+        res.status(200).json( chats );
+    } catch (error) {
+        console.error('Error listing chats:', error);
+        res.status(500).json({ message: "An error occurred while listing chats." });
+    }
+};
+
+
+
+
+
+module.exports = { createChat, deleteChat, findUserChats, findChat, addUser, joinChat, quitChat, listChat};
