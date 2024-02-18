@@ -8,14 +8,38 @@ import InputEmoji from "react-input-emoji";
 import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
-import { Message } from '../../types/ChatContextTypes';
+import { Chat, Message } from '../../types/ChatContextTypes';
 
 const ChatBox = () => {
 
     const {user, changeNickname} = useContext(AuthContext);
-    const { currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
+    const {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
+    const [userChats, setUserChats] = useState<Chat[] | null>(null);
+
+    
+
+    const listUsersInChannel = async () => {
+        if (!user || !currentChat) return;
+    
+        // Ensure potentialChats is not undefined
+        const users = potentialChats ?? [];
+    
+        // Extract user names
+        const names: string[] = [];
+        currentChat.members.forEach((userId: string) => {
+            const user = users.find((user) => user._id === userId);
+            if (user) {
+                names.push(user.name);
+            }
+        });
+        
+        // Show the user names in an alert
+        alert(`Users in the channel: ${names.join(", ")}`);
+    };
+
+
 
     if (!recipientUser){
         return (
@@ -69,7 +93,11 @@ const ChatBox = () => {
                     if (changeNickname) await changeNickname(argument)
                     setTextMessage('');
                 break;
-
+                case '/users':
+                    if (argument) return false;
+                    await listUsersInChannel();
+                    setTextMessage('');
+                    break;  
                 default:
                     console.log("Unknown command:", command);
                     return false;  
