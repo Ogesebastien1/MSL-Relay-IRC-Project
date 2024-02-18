@@ -42,30 +42,38 @@ const ChatBox = () => {
         alert(`Users in the channel: ${names.join(", ")}`);
     };
 
-    const listChannel = async () => {
-        try {
-            // Make a GET request to list channels
-            const response = await getRequest(`${baseUrl}/chats/list`);
-    
-            if (response.error) {
-                throw new Error(response.message || 'Failed to list channels');
-            }
-    
-            // Accumulate chat names into a single string
-            let chatNamesString = '';
-            response.forEach((chat: { chatName: any; }) => {
-                chatNamesString += `${chat.chatName}, `;
-            });
-    
-            // Remove the trailing comma and space
-            chatNamesString = chatNamesString.slice(0, -2);
-    
-            // Display the accumulated chat names in one alert
-            alert(`Chat Names: ${chatNamesString}`);
-        } catch (error: any) {
-            console.error('Error listing channels:', error.message);
+    const listChannel = async (argument?: string) => {
+    try {
+        // Make a GET request to list channels
+        const response = await getRequest(`${baseUrl}/chats/list`);
+
+        if (response.error) {
+            throw new Error(response.message || 'Failed to list channels');
         }
-    };
+
+        let results = "";
+
+        if(argument){
+            response.forEach((chat: { chatName: string; }) => {
+                if (chat.chatName.includes(argument)){
+                    results += chat.chatName + ", "
+                }else{
+                    return
+                }
+            });
+        }else{
+            response.forEach((chat: { chatName: string; }) => {
+                results += chat.chatName + ", "
+            });
+        }
+        // Display the accumulated chat names in one alert
+        alert(`Chat Names: ${results}`);
+    } catch (error: any) {
+        console.error('Error listing channels:', error.message);
+    }
+};
+
+
 
 
     if (!recipientUser){
@@ -126,8 +134,8 @@ const ChatBox = () => {
                     setTextMessage('');
                     break;  
                 case '/list':
-                    if (argument) return false;
-                    await listChannel();
+                    if (argument) await listChannel(argument);
+                    if (!argument) await listChannel();
                     setTextMessage('');
                     break;  
                 default:
