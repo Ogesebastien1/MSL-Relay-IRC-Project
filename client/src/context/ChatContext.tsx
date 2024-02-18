@@ -6,6 +6,7 @@ import { ChatContextType, ChatContextProviderProps, Chat, Message, User, OnlineU
 import { AuthContext } from "./AuthContext";
 
 export const ChatContext = createContext<ChatContextType | null>(null);
+    
 
 export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, user }) => {
     const [userChats, setUserChats] = useState<Chat[] | null>(null);
@@ -24,6 +25,8 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const authContext = useContext(AuthContext);
     const chatContext = useContext(ChatContext);
+    
+    
 
     // initial socket ---
     useEffect(() => {
@@ -312,6 +315,10 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             console.error("An error occurred while adding user to chat:", error);
         }
     }, [currentChat]);
+    
+
+
+    
     
     return (
         <ChatContext.Provider value={{ 

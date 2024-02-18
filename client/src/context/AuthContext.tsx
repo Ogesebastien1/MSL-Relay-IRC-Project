@@ -50,7 +50,8 @@ type AuthContextType = {
     updateLoginInfo: (info: loginInfoType) => void; 
     isLoginLoading: boolean;  
     handleAccessAsGuest: React.MouseEventHandler<HTMLButtonElement>,
-    handleChangeName: () => void
+    handleChangeName: () => void,
+    changeNickname: (text: string) => Promise<void>
 };
 
 const defaultAuthContext: AuthContextType = {
@@ -67,7 +68,8 @@ const defaultAuthContext: AuthContextType = {
     updateLoginInfo: () => {},
     isLoginLoading: false,
     handleAccessAsGuest: async () => {},
-    handleChangeName: () => {}
+    handleChangeName: () => {},
+    changeNickname: async () => {}
 };
 
 interface AuthContextProviderProps {
@@ -213,6 +215,50 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             }
         }
     }, []); 
+
+    const changeNickname = useCallback(async (text: string) => {
+        return new Promise<void>(async resolve => {
+            const newName = text; // Extracting the new name from the text after "/nick"
+            
+            if (!newName) {
+                console.error("New name not provided.");
+                resolve();
+                return;
+            }
+    
+            const userString = localStorage.getItem("User");
+    
+            if (userString !== null) {
+                const userObject = JSON.parse(userString);
+                console.log(userObject);
+                try {
+                    console.log("newname front", newName)
+                    console.log("user front", userObject?.email);
+                    // Send a POST request to the backend to update the name
+                    const response = await postRequest(`${baseUrl}/users/visitorChangeName`, JSON.stringify({ name: newName, email: userObject?.email }));
+    
+                    // Check if there is an error in the response
+                    if (response.error) {
+                        console.error('Error updating name:', response.error);
+                        return;
+                    }
+    
+                    setUser(response);
+    
+                    console.log("response", JSON.stringify(response))
+                } catch (error) {
+                    console.error("Error updating name:", error);
+                }
+            } else {
+                console.error("User data not found in localStorage.");
+            }
+    
+            resolve(); // Resolve the promise when the function execution is complete
+        });
+    }, []);
+    
+    
+    
     
 
 
@@ -233,6 +279,7 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ childr
             isLoginLoading,
             handleAccessAsGuest,
             handleChangeName,
+            changeNickname,
         }}>
             {children}
         </AuthContext.Provider>

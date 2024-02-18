@@ -19,7 +19,7 @@ const UserSelectionModal: React.FC<UserSelectionModalProps> = ({ isOpen, onClose
     if (!isOpen) return null;
 
     const [filteredUsers, setFilteredUsers] = useState<User[] | null>(null)
-    const { currentChat } = useContext(ChatContext) ?? {};
+    const { currentChat} = useContext(ChatContext) ?? {};
     const {user} = useContext(AuthContext);
 
     useEffect(() => {
