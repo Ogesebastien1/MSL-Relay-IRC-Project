@@ -9,7 +9,8 @@ import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
 import { Message } from '../../types/ChatContextTypes';
-import { postRequest, baseUrl } from '../../utils/services';
+import { postRequest, baseUrl, getRequest } from '../../utils/services';
+import Chat from "../../pages/Chat";
 
 const ChatBox = () => {
 
@@ -42,20 +43,29 @@ const ChatBox = () => {
     };
 
     const listChannel = async () => {
-    try {
-        // Make a POST request to list channels
-        const response = await postRequest(`${baseUrl}/chats/list`, null);
-
-        if (response.error) {
-            throw new Error(response.message || 'Failed to list channels');
+        try {
+            // Make a GET request to list channels
+            const response = await getRequest(`${baseUrl}/chats/list`);
+    
+            if (response.error) {
+                throw new Error(response.message || 'Failed to list channels');
+            }
+    
+            // Accumulate chat names into a single string
+            let chatNamesString = '';
+            response.forEach((chat: { chatName: any; }) => {
+                chatNamesString += `${chat.chatName}, `;
+            });
+    
+            // Remove the trailing comma and space
+            chatNamesString = chatNamesString.slice(0, -2);
+    
+            // Display the accumulated chat names in one alert
+            alert(`Chat Names: ${chatNamesString}`);
+        } catch (error: any) {
+            console.error('Error listing channels:', error.message);
         }
-
-        // Handle the data received from the server
-        console.log('List of channels:', response);
-    } catch (error: any) {
-        console.error('Error listing channels:', error.message);
-    }
-};
+    };
 
 
     if (!recipientUser){

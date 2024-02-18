@@ -8,7 +8,7 @@ router.post("/", createChat);
 router.post("/delete", deleteChat);
 router.post("/join", joinChat);
 router.post("/quit", quitChat);
-router.post("/list", listChat);
+router.get("/list", listChat)
 router.get("/:userId", findUserChats);
 router.get("/find/:firstId/:secondId", findChat);
 router.post("/addUser", addUser);

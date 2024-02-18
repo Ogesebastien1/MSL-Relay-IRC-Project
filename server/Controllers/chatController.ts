@@ -183,19 +183,11 @@ const listChat = async (req: any, res: any) => {
     const { chatName } = req.body;
 
     try {
-        // Check if the chat exists in the database
-        const existingChat = await chatModel.findOne({ chatName : chatName});
-
-        // If the chat doesn't exist, return a 404 error
-        if (!existingChat) {
-            return res.status(404).json({ message: "No chat found with the given name." });
-        }
-
         // If the chat exists, retrieve the list of chats
-        const chats = await chatModel.find({ chatName });
+        const chats = await chatModel.find({ chatName: { $exists: true }});;
 
         // Send the list of chats to the front end
-        res.json({ chats });
+        res.status(200).json( chats );
     } catch (error) {
         console.error('Error listing chats:', error);
         res.status(500).json({ message: "An error occurred while listing chats." });
