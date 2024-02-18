@@ -9,11 +9,13 @@ import { Button } from "react-bootstrap";
 import UserSelectionModal from "../UserSelectionModal";
 import avatar from "../../../assets/avatar_white.png"
 import { Message } from '../../types/ChatContextTypes';
+import { postRequest, baseUrl } from '../../utils/services';
 
 const ChatBox = () => {
 
     const {user, changeNickname} = useContext(AuthContext);
-    const {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat } = useContext(ChatContext) ?? {};
+    const 
+    {currentChat, messages, isMessageLoading, sendTextMessage, potentialChats, handleUserSelect, showAddUserModal, handleToggleAddUserModal, createChat, deleteChat, joinChat, quitChat} = useContext(ChatContext) ?? {};
     const {recipientUser} = useFetchRecipientUser(currentChat, user);
     const [textMessage, setTextMessage] = useState("");
 
@@ -39,6 +41,21 @@ const ChatBox = () => {
         alert(`Users in the channel: ${names.join(", ")}`);
     };
 
+    const listChannel = async () => {
+    try {
+        // Make a POST request to list channels
+        const response = await postRequest(`${baseUrl}/chats/list`, null);
+
+        if (response.error) {
+            throw new Error(response.message || 'Failed to list channels');
+        }
+
+        // Handle the data received from the server
+        console.log('List of channels:', response);
+    } catch (error: any) {
+        console.error('Error listing channels:', error.message);
+    }
+};
 
 
     if (!recipientUser){
@@ -96,6 +113,11 @@ const ChatBox = () => {
                 case '/users':
                     if (argument) return false;
                     await listUsersInChannel();
+                    setTextMessage('');
+                    break;  
+                case '/list':
+                    if (argument) return false;
+                    await listChannel();
                     setTextMessage('');
                     break;  
                 default:
