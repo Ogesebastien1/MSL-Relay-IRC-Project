@@ -23,10 +23,6 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[] | null>([]);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
-    const authContext = useContext(AuthContext);
-    const chatContext = useContext(ChatContext);
-    
-    
 
     // initial socket ---
     useEffect(() => {
@@ -55,9 +51,13 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
     // send real-time message
     useEffect(()=>{
         if (socket === null) return
-
         const recipientId = currentChat?.members?.find((id: string) => id !==user?._id);
-        socket.emit("sendMessage", {...newMessage, recipientId})
+        const members: string[] = currentChat?.members ?? [];
+        let isChannel = false;
+        if(currentChat?.chatName){
+            isChannel = true;
+        }
+        socket.emit("sendMessage", {...newMessage, recipientId, members, isChannel})
     }, [newMessage]);
 
     // recieve real-time message
@@ -70,8 +70,15 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             setMessages((prev) => prev ? [...prev, res] : [res]);
         });
 
+        let toConsole;
+        socket.on("notification", (notif) => {
+            setMessages((prevMessages) => [...(prevMessages || []), notif]);
+            toConsole = notif;
+        });
+
         return  () => {
             socket.off("getMessage");
+            socket.off("notification");
         }
 
     }, [socket, currentChat]);
@@ -151,7 +158,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             chatId: currentChatId,
             senderId: sender._id,
             text: textMessage,
-            senderName: sender.name
+            senderName: sender.name,
         }));
 
         if (response.error) {
@@ -218,27 +225,31 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
         try {
             const data = JSON.stringify({ chatName, userId});
             const response = await postRequest(`${baseUrl}/chats/join`, data); // Adjust the URL accordingly
-            console.log("response" , response)
+
             if (response.error) {
                 // Show error message to the user in a prompt
                 alert("Already in chat");
                 return console.log("Already in chat");
             }
+
+            // notification to other users
+            const joinedChatName = response.chatName;
+            const userName = user?.name;
+            const members: string[] = response?.members ?? [];
+            if (socket) socket.emit("joinChat", { joinedChatName, userId, userName, members });
+
              // Update the userChats state
             setUserChats((prev) => {
-
-            return prev ? [...prev, response] : [response];
+                return prev ? [...prev, response] : [response];
             })
     
-            // Handle successful join, if needed
-            console.log("Joined chat successfully");
         } catch (error) {
             console.error("Error joining chat", error);
         }
 
     
 
-    }, [user]);
+    }, [user, socket]);
 
      // quit channel
     const quitChat = useCallback(async (chatName: string) => {
@@ -251,9 +262,13 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             if (response.error) {
                 return console.log("Error quitting chat", response);
             }
-    
-            // Handle successful quit, if needed
-            console.log("Quit chat successfully");
+
+            // notification to other users
+            const quitChatName = response.chatName;
+            const userName = user?.name;
+            const members: string[] = response?.members ?? [];
+            if (socket) socket.emit("quitChat", { quitChatName, userId, userName, members });
+            
         } catch (error) {
             console.error("Error quitting chat", error);
         }
@@ -269,7 +284,7 @@ export const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ childr
             // Return the updated chats array, which will always be an array, thus matching Chat[] | null
             return updatedChats.length > 0 ? updatedChats : null;
         });
-    }, [user]);
+    }, [user, socket]);
 
     // toggle modal visibility
     const handleToggleAddUserModal = useCallback(async () => {

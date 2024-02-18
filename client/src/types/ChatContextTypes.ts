@@ -12,6 +12,7 @@ export interface Message {
     _id: string;
     senderId: string;
     text: string;
+    type: 'message' | 'notification';
     creatAt: Date;
     senderName: string;
 }

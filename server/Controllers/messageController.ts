@@ -1,7 +1,6 @@
 import messageModel from "../Models/messageModel";
 
 // createMessage
-
 export const createMessage = async(req : any, res : any) => {
     const {chatId, senderId, text, senderName} = req.body
 
@@ -19,7 +18,6 @@ export const createMessage = async(req : any, res : any) => {
 };
 
 // getMessages
-
 export const getMessages= async (req : any, res : any) => {
     const {chatId} = req.params;
 
